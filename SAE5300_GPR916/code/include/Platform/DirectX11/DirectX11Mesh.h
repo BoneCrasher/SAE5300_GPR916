@@ -22,6 +22,12 @@ namespace SAE {
           std::shared_ptr<DirectX11ResourceManager>      &resourceManager,
           std::string                               const&filename);
     
+      uint64_t const& vertexBufferHandle() const { return m_vertexBufferHandle; }
+      uint64_t const& indexBufferHandle()  const { return m_indexBufferHandle;  }
+      uint64_t const& inputLayoutHandle()  const { return m_inputLayoutHandle;  }
+      uint64_t const& vertexShaderHandle() const { return m_vertexShaderHandle; }
+      uint64_t const& pixelShaderHandle()  const { return m_pixelShaderHandle;  }
+
     private:
       DirectX11Mesh() = default;
 
@@ -30,9 +36,12 @@ namespace SAE {
 
       uint64_t
         m_vertexBufferHandle,
-        m_indexBufferHandle;
+        m_indexBufferHandle,
+        m_inputLayoutHandle,
+        m_vertexShaderHandle,
+        m_pixelShaderHandle;
     };
-
+    using DirectX11MeshPtr = std::shared_ptr<DirectX11Mesh>;
   }
 }
 

@@ -117,19 +117,36 @@ namespace SAE {
         return true;
       };
 
-      std::vector<uint8_t> shaderByteCode;
+      std::vector<uint8_t> 
+        vertexShaderByteCode,
+        pixelShaderByteCode;
 
-      if(!loadShaderFn("standard_vertex_shader.cso", shaderByteCode)) {
+      if(!loadShaderFn("standard_vertex_shader.cso", vertexShaderByteCode)) {
+        // TODO: ERROR
+      }
+
+      if(!loadShaderFn("standard_fragment_shader.cso", pixelShaderByteCode)) {
         // TODO: ERROR
       }
 
       DirectX11ShaderBuffer
         vertexShaderBuffer ={ nullptr, 0 };
-      vertexShaderBuffer.pData = shaderByteCode.data();
-      vertexShaderBuffer.size  = shaderByteCode.size();
+      vertexShaderBuffer.pData = vertexShaderByteCode.data();
+      vertexShaderBuffer.size  = vertexShaderByteCode.size();
+
+      DirectX11ShaderBuffer
+        pixelShaderBuffer ={ nullptr, 0 };
+      pixelShaderBuffer.pData = pixelShaderByteCode.data();
+      pixelShaderBuffer.size  = pixelShaderByteCode.size();
 
       uint64_t inputLayoutHandle
         = resourceManager->create<ID3D11InputLayout>(inputElements, vertexShaderBuffer);
+
+      uint64_t vertexShaderHandle
+        = resourceManager->create<ID3D11VertexShader>(vertexShaderBuffer);
+
+      uint64_t pixelShaderHandle
+        = resourceManager->create<ID3D11PixelShader>(pixelShaderBuffer);
 
       return pMesh;
     }

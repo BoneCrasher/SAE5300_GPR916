@@ -60,7 +60,7 @@ namespace SAE {
 
       if((initialSubresource.pSysMem && initialSubresource.SysMemPitch))
         subresource = &initialSubresource;
-
+      
       // 2. Call ID3D11Device creation function and handle error
       HRESULT hres = m_device->CreateBuffer(&desc, subresource, &pBufferUnmanaged);
       HandleWINAPIError(hres, "Failed to create buffer.");
@@ -115,6 +115,50 @@ namespace SAE {
 
       // 6. Return id
       return id;
+    }
+    
+    #define ShaderCreationFunction(Type, Function)                              \
+              Type                                                              \
+                *pShaderUnmanaged = nullptr;                                    \
+                                                                                \
+              HRESULT hres                                                      \
+                = m_device->Function(                                           \
+                  byteCodeBuffer.pData,                                         \
+                  byteCodeBuffer.size,                                          \
+                  nullptr,                                                      \
+                  &pShaderUnmanaged);                                           \
+              HandleWINAPIError(hres, "Failed to #Function.");                  \
+                                                                                \
+              uint64_t id = reinterpret_cast<uint64_t>(pShaderUnmanaged);       \
+                                                                                \
+              std::shared_ptr<Type>                                             \
+                phaderManaged                                                   \
+                = MakeDirectX11ResourceSharedPointer(pShaderUnmanaged);         \
+                                                                                \
+              this->ResourceHolder<Type>                                        \
+                ::set(id, phaderManaged);                                       \
+                                                                                \
+              return id;
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11VertexShader,
+      DirectX11ShaderBuffer>
+      (DirectX11ShaderBuffer const& byteCodeBuffer)
+    {
+      ShaderCreationFunction(ID3D11VertexShader, CreateVertexShader);
+    }
+
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11PixelShader,
+      DirectX11ShaderBuffer>
+      (DirectX11ShaderBuffer const& byteCodeBuffer)
+    {
+       ShaderCreationFunction(ID3D11PixelShader, CreatePixelShader);
     }
 
     template <>

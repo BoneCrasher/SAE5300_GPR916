@@ -20,6 +20,8 @@ namespace SAE {
     ID3D11RasterizerState, \
     ID3D11Buffer,          \
     ID3D11InputLayout,     \
+    ID3D11VertexShader,    \
+    ID3D11PixelShader,     \
     ID3D11Texture2D,       \
     ID3D11Texture3D
 
@@ -71,6 +73,20 @@ namespace SAE {
                DirectX11ShaderBuffer>
       (std::vector<D3D11_INPUT_ELEMENT_DESC> const&layoutElements,
        DirectX11ShaderBuffer                 const&vertexShader);
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11VertexShader,
+               DirectX11ShaderBuffer>
+      (DirectX11ShaderBuffer const& byteCodeBuffer);
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11PixelShader,
+               DirectX11ShaderBuffer>
+      (DirectX11ShaderBuffer const& byteCodeBuffer);
 
     template <>
     uint64_t
