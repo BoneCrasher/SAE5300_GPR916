@@ -21,7 +21,7 @@ namespace SAE {
       {
         {{-0.5f, -0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
         {{+0.5f, -0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-        {{+0.0f, -0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}
+        {{+0.0f,  0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}
       };
 
       IndexBuffer_t&  underlyingIndexBuffer = pMesh->indexBuffer();
@@ -147,6 +147,12 @@ namespace SAE {
 
       uint64_t pixelShaderHandle
         = resourceManager->create<ID3D11PixelShader>(pixelShaderBuffer);
+      
+      pMesh->setVertexBuffer(vertexBufferHandle);
+      pMesh->setIndexBuffer(indexBufferHandle);
+      pMesh->setVertexShader(vertexShaderHandle);
+      pMesh->setPixelShader(pixelShaderHandle);
+      pMesh->setInputLayout(inputLayoutHandle);
 
       return pMesh;
     }

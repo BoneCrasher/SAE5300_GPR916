@@ -10,6 +10,7 @@ namespace SAE {
 
     struct DisplayEnvironment {
       int32_t width;
+      /** \brief The height */
       int32_t height;
     };
 

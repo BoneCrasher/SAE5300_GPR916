@@ -24,12 +24,12 @@ namespace SAE {
     {
     public:
       inline DX11Transform()
-        : m_scale({1.0f, 1.0f, 1.0f})
+        : m_scale({ 1.0f, 1.0f, 1.0f })
         , m_rotation(XMMatrixIdentity())
-        , m_translation({0.0f, 0.0f, 0.0f})
-        , m_direction({0.0f, 0.0f, 1.0f})
-        , m_right({1.0f, 0.0f, 0.0f})
-        , m_up({0.0f, 1.0f, 0.0f})
+        , m_translation({ 0.0f, 0.0f, 0.0f })
+        , m_direction({ 0.0f, 0.0f, 1.0f })
+        , m_right({ 1.0f, 0.0f, 0.0f })
+        , m_up({ 0.0f, 1.0f, 0.0f })
         , m_local(XMMatrixIdentity())
         , m_composed(XMMatrixIdentity())
       {
@@ -64,9 +64,9 @@ namespace SAE {
         invalidate(); invalidate();
       }
 
-      inline void rotateXBy(const float& angle) { rotateAroundAxisBy({1.0f, 0.0f, 0.0f, 0.0f}, RAD(angle)); }
-      inline void rotateYBy(const float& angle) { rotateAroundAxisBy({0.0f, 1.0f, 0.0f, 0.0f}, RAD(angle)); }
-      inline void rotateZBy(const float& angle) { rotateAroundAxisBy({0.0f, 0.0f, 1.0f, 0.0f}, RAD(angle)); }
+      inline void rotateXBy(const float& angle) { rotateAroundAxisBy({ 1.0f, 0.0f, 0.0f, 0.0f }, RAD(angle)); }
+      inline void rotateYBy(const float& angle) { rotateAroundAxisBy({ 0.0f, 1.0f, 0.0f, 0.0f }, RAD(angle)); }
+      inline void rotateZBy(const float& angle) { rotateAroundAxisBy({ 0.0f, 0.0f, 1.0f, 0.0f }, RAD(angle)); }
 
       inline void rollBy(const float& angle) { rotateAroundAxisBy(m_direction, RAD(angle)); }
       inline void pitchBy(const float& angle) { rotateAroundAxisBy(m_right, RAD(angle)); }
@@ -80,7 +80,7 @@ namespace SAE {
         const float& y,
         const float& z)
       {
-        setRotation({x, y, z, 0.0f});
+        setRotation({ x, y, z, 0.0f });
       }
       inline void setRotation(const XMVECTOR& vec) {
         m_rotation *= XMMatrixRotationY(RAD(VEC_Y(vec)));
@@ -128,7 +128,8 @@ namespace SAE {
       {
         m_composed = parent * m_local;
 
-        *pCombined = composedWorldMatrix();
+        if(pCombined)
+          *pCombined = composedWorldMatrix();
       }
 
       inline XMMATRIX composedWorldMatrix() const
@@ -141,9 +142,9 @@ namespace SAE {
       {
         using namespace DirectX;
 
-        static XMVECTOR rgt ={1.0f, 0.0f, 0.0f, 0.0f};
-        static XMVECTOR up  ={0.0f, 1.0f, 0.0f, 0.0f};
-        static XMVECTOR fwd ={0.0f, 0.0f, 1.0f, 0.0f};
+        static XMVECTOR rgt ={ 1.0f, 0.0f, 0.0f, 0.0f };
+        static XMVECTOR up  ={ 0.0f, 1.0f, 0.0f, 0.0f };
+        static XMVECTOR fwd ={ 0.0f, 0.0f, 1.0f, 0.0f };
 
         XMMATRIX T  = XMMatrixTranslation(VEC_X(m_translation), VEC_Y(m_translation), VEC_Z(m_translation));
         XMMATRIX R  = m_rotation;

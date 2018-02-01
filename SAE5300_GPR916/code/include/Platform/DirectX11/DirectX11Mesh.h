@@ -33,6 +33,9 @@ namespace SAE {
 
       inline void setVertexBuffer(uint64_t const&handle) { m_vertexBufferHandle = handle; }
       inline void setIndexBuffer(uint64_t const&handle)  { m_indexBufferHandle  = handle; }
+      inline void setVertexShader(uint64_t const&handle) { m_vertexShaderHandle = handle; }
+      inline void setPixelShader(uint64_t const&handle)  { m_pixelShaderHandle = handle;  }
+      inline void setInputLayout(uint64_t const&handle)  { m_inputLayoutHandle = handle;  }
 
       uint64_t
         m_vertexBufferHandle,

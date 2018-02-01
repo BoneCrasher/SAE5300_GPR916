@@ -58,7 +58,7 @@ namespace SAE {
       D3D11_SUBRESOURCE_DATA
         const *subresource = nullptr;
 
-      if((initialSubresource.pSysMem && initialSubresource.SysMemPitch))
+      if((initialSubresource.pSysMem))
         subresource = &initialSubresource;
       
       // 2. Call ID3D11Device creation function and handle error

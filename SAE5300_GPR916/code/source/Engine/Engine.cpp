@@ -15,8 +15,8 @@ namespace SAE {
       ::initialize(std::shared_ptr<DirectX11ResourceManager> &resourceManager)
     {
       Camera::Properties cameraProperties ={};
-      cameraProperties.aspectRatio  = 1920.0/1080.0;
-      cameraProperties.fieldOfViewY = 45.0;
+      cameraProperties.aspectRatio  = 1920.0f/1080.0f;
+      cameraProperties.fieldOfViewY = M_PI / 4.0f;
       cameraProperties.nearPlane    = 0.05;
       cameraProperties.farPlane     = 1000.0;
 
@@ -32,8 +32,11 @@ namespace SAE {
       cameraBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
       cameraBufferDesc.StructureByteStride = 0;
 
+      D3D11_SUBRESOURCE_DATA
+        cameraInitialData={};
+
       m_cameraBuffer
-        = resourceManager->create<ID3D11Buffer>(cameraBufferDesc);
+        = resourceManager->create<ID3D11Buffer>(cameraBufferDesc, cameraInitialData);
       
       D3D11_BUFFER_DESC
         objectBufferDesc ={};
@@ -44,8 +47,11 @@ namespace SAE {
       objectBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
       objectBufferDesc.StructureByteStride = 0;
 
+      D3D11_SUBRESOURCE_DATA
+        objectInitialData={};
+
       m_objectBuffer
-        = resourceManager->create<ID3D11Buffer>(objectBufferDesc);
+        = resourceManager->create<ID3D11Buffer>(objectBufferDesc, objectInitialData);
       
       // LOAD MESHES HERE!!!
       uint64_t triangleId = 1;
@@ -55,7 +61,7 @@ namespace SAE {
       triangleMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "");
 
       DX11TransformPtr triangleTransform = DX11TransformPtr(new DX11Transform());
-      triangleTransform->translateDirectionalBy(5);
+      triangleTransform->setTranslationZ(1);
 
       m_transforms[triangleId] = triangleTransform;
       m_meshes[triangleId]     = triangleMesh;
@@ -136,6 +142,7 @@ namespace SAE {
           mesh = m_meshes[root.objectId];
 
           if(mesh) {
+            object.objectId       = root.objectId;
             object.vertexBufferId = mesh->vertexBufferHandle();
             object.indexBufferId  = mesh->indexBufferHandle();
             object.inputLayoutId  = mesh->inputLayoutHandle();
@@ -167,7 +174,7 @@ namespace SAE {
       sceneHolder.objectBufferUpdateFn = 
         [this] (ObjectBuffer_t *ptr, uint64_t const&objectId) -> bool
       {
-        if(objectId)
+        if(!objectId)
           return false;
 
         DX11TransformPtr transform = m_transforms[objectId];

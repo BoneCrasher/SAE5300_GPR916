@@ -4,11 +4,13 @@
 #include "Platform/DirectX11/DirectX11Environment.h"
 #include "Platform/DirectX11/DirectX11ResourceManager.h"
 #include "Platform/Timer.h"
+#include "RendererDTO.h"
 
 namespace SAE {
   namespace Rendering {
     using SAE::DirectX11::DirectX;
     using SAE::DirectX11::DirectX11ResourceManager;
+    using namespace SAE::DTO;
 
     class Renderer {
     public:
@@ -19,13 +21,19 @@ namespace SAE {
       bool initialize();
       bool deinitialize();
 
-      void render(SAE::Timing::Timer::State const&time);
+      void render(
+        SAE::Timing::Timer::State const&time,
+        RenderScene               const&scene);
 
     private:
       std::shared_ptr<DirectX> 
         m_dx11Environment;
       std::shared_ptr<DirectX11ResourceManager> 
         m_resourceManager;
+
+      uint64_t m_rasterizerStateId;
+
+      D3D11_VIEWPORT m_viewPort;
     };
 
   }

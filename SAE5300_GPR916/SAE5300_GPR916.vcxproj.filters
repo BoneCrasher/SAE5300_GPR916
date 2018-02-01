@@ -75,6 +75,9 @@
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="code\include\Renderer\RendererDTO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
