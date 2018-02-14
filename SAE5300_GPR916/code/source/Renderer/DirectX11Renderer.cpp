@@ -18,7 +18,7 @@ namespace SAE {
     bool Renderer::initialize() {
       D3D11_RASTERIZER_DESC desc={};
       desc.FillMode              = D3D11_FILL_SOLID;
-      desc.CullMode              = D3D11_CULL_NONE;
+      desc.CullMode              = D3D11_CULL_BACK;
       desc.FrontCounterClockwise = false;
       desc.AntialiasedLineEnable = false;
       desc.MultisampleEnable     = false;
@@ -49,7 +49,7 @@ namespace SAE {
       ID3D11RenderTargetView *renderTarget    = m_dx11Environment->getMainRenderTarget().get();
       ID3D11RasterizerState  *rasterizerState = reinterpret_cast<ID3D11RasterizerState*>(m_rasterizerStateId);
 
-      FLOAT color[4] ={ 0.0f, 0.0f, 0.0f, 1.0f };
+      FLOAT color[4] ={ 0.5f, 0.5f, 0.5f, 1.0f };
       context->ClearRenderTargetView(renderTarget, color);
       context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
       context->RSSetState(rasterizerState);
@@ -58,6 +58,7 @@ namespace SAE {
 
       ID3D11Buffer *cameraBuffer =reinterpret_cast<ID3D11Buffer*>(scene.cameraBufferId);
       ID3D11Buffer *objectBuffer =reinterpret_cast<ID3D11Buffer*>(scene.objectBufferId);
+      ID3D11Buffer *lightBuffer  =reinterpret_cast<ID3D11Buffer*>(scene.lightBufferId);
 
       D3D11_MAPPED_SUBRESOURCE mapped ={};
       context->Map(
@@ -72,6 +73,22 @@ namespace SAE {
 
       context->VSSetConstantBuffers(0, 1, &cameraBuffer);
 
+      // Lights
+      for(uint64_t const&lightId : scene.lights) {
+        context->Map(
+          lightBuffer,
+          0,
+          D3D11_MAP_WRITE_DISCARD,
+          0,
+          &mapped);
+        if(scene.lightingBufferUpdateFn)
+          scene.lightingBufferUpdateFn(static_cast<LightBuffer_t*>(mapped.pData), lightId);
+        context->Unmap(lightBuffer, 0);
+      }
+
+      context->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+      // Objects
       for(RenderObject const&object : scene.objects) {
         ID3D11Buffer       *vertexBuffer = reinterpret_cast<ID3D11Buffer*>(object.vertexBufferId);
         ID3D11Buffer       *indexBuffer  = reinterpret_cast<ID3D11Buffer*>(object.indexBufferId);

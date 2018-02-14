@@ -83,6 +83,7 @@ namespace SAE {
         setRotation({ x, y, z, 0.0f });
       }
       inline void setRotation(const XMVECTOR& vec) {
+        m_rotation  = XMMatrixIdentity();
         m_rotation *= XMMatrixRotationY(RAD(VEC_Y(vec)));
         m_rotation *= XMMatrixRotationX(RAD(VEC_X(vec)));
         m_rotation *= XMMatrixRotationZ(RAD(VEC_Z(vec)));

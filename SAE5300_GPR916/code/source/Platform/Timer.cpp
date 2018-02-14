@@ -57,7 +57,7 @@ namespace SAE {
         = ((m_previousTimestamp.QuadPart - m_currentTimestamp.QuadPart)
            / ((double)m_frequency.QuadPart));
       m_totalElapsed 
-        = ((m_firstTimestamp.QuadPart - m_currentTimestamp.QuadPart)
+        = ((m_currentTimestamp.QuadPart - m_firstTimestamp.QuadPart)
            / ((double)m_frequency.QuadPart));
 
       return true;

@@ -154,6 +154,7 @@
     <ClInclude Include="code\include\Engine\Transform.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Camera.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Environment.h" />
+    <ClInclude Include="code\include\Platform\DirectX11\DirectX11Lighting.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11ResourceManager.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Transform.h" />
     <ClInclude Include="code\include\Platform\Input.h" />

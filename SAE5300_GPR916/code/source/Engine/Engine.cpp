@@ -7,9 +7,7 @@
 
 namespace SAE {
   namespace Engine {
-    using namespace SAE::Log;
-
-    
+    using namespace SAE::Log;   
 
     bool Engine
       ::initialize(std::shared_ptr<DirectX11ResourceManager> &resourceManager)
@@ -39,6 +37,26 @@ namespace SAE {
         = resourceManager->create<ID3D11Buffer>(cameraBufferDesc, cameraInitialData);
       
       D3D11_BUFFER_DESC
+        lightBufferDesc ={};
+      lightBufferDesc.ByteWidth           = sizeof(LightBuffer_t);
+      lightBufferDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+      lightBufferDesc.Usage               = D3D11_USAGE_DYNAMIC;
+      lightBufferDesc.MiscFlags           = 0;
+      lightBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+      lightBufferDesc.StructureByteStride = 0;
+
+      D3D11_SUBRESOURCE_DATA
+        lightInitialData={};
+
+      m_lightBuffer
+        = resourceManager->create<ID3D11Buffer>(lightBufferDesc, lightInitialData);
+
+      DX11TransformPtr lightTransform = DX11TransformPtr(new DX11Transform());
+      lightTransform->setTranslation(-10.0f, 10.0f, 0.0f);
+
+      m_lights[1] = lightTransform;
+
+      D3D11_BUFFER_DESC
         objectBufferDesc ={};
       objectBufferDesc.ByteWidth           = sizeof(ObjectBuffer_t);
       objectBufferDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
@@ -61,7 +79,7 @@ namespace SAE {
       triangleMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "");
 
       DX11TransformPtr triangleTransform = DX11TransformPtr(new DX11Transform());
-      triangleTransform->setTranslationZ(1);
+      triangleTransform->setTranslationZ(5);
 
       m_transforms[triangleId] = triangleTransform;
       m_meshes[triangleId]     = triangleMesh;
@@ -96,6 +114,11 @@ namespace SAE {
       std::function<void(DX11TransformPtr const&, Node &)>
         updateHierarchyFn = nullptr;
 
+      // Transform all objects
+      float rotation = (360.0f / 15.0f) * time.totalElapsed;
+      m_transforms[1]->setRotation(0.0f, rotation, 0.0f);
+
+      // Update hierarchy to generate world matrices
       DX11TransformPtr parent = DX11TransformPtr(new DX11Transform());
       updateHierarchyFn 
         = [&] (DX11TransformPtr const&parent, Node &root) ->void
@@ -161,8 +184,10 @@ namespace SAE {
       renderHierarchyFn(renderObjects, m_hierarchyRoot);
 
       sceneHolder.objects        = renderObjects;
+      sceneHolder.lights         ={ 1 };
       sceneHolder.cameraBufferId = m_cameraBuffer;
       sceneHolder.objectBufferId = m_objectBuffer;
+      sceneHolder.lightBufferId  = m_lightBuffer;
       sceneHolder.cameraBufferUpdateFn = 
         [this] (CameraBuffer_t *ptr) -> bool
       {
@@ -181,6 +206,18 @@ namespace SAE {
         ptr->world = transform->composedWorldMatrix();
         return true;
       };
+
+      sceneHolder.lightingBufferUpdateFn = 
+        [this] (LightBuffer_t *ptr, uint64_t const&lightId) -> bool
+      {
+        if(!lightId)
+          return false;
+
+        DX11TransformPtr transform = m_lights[lightId];
+        ptr->position = transform->getTranslation();
+        return true;
+      };
+
 
       return true;
     }

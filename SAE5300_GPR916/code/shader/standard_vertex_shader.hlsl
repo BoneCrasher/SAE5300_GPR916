@@ -26,6 +26,7 @@ struct VertexInput
 struct VertexOutput
 {
     float4 position : SV_Position;
+    float4 worldSpacePosition : POSITION0;
     float4 normal : NORMAL0;
     float4 color : COLOR0;
 };
@@ -40,8 +41,9 @@ VertexOutput main(VertexInput input)
     float4x4 worldViewProjection = mul(viewProjection, world);
 
     VertexOutput output;
-    output.position = mul(worldViewProjection, input.position);
-    output.normal   = mul(worldViewProjection, input.normal);
-    output.color    = input.color;
+    output.position           = mul(worldViewProjection, input.position);
+    output.worldSpacePosition = mul(world, input.position);
+    output.normal             = mul(worldViewProjection, input.normal);
+    output.color              = input.color;
     return output;
 }

@@ -20,6 +20,10 @@ namespace SAE {
       XMMATRIX world;
     };
 
+    struct LightBuffer_t {
+      XMVECTOR position;
+    };
+
     struct RenderObject {
       uint64_t
         objectId,
@@ -31,15 +35,20 @@ namespace SAE {
     };
 
     struct RenderScene {
-      uint64_t 
+      uint64_t
         cameraBufferId,
-        objectBufferId;
+        objectBufferId,
+        lightBufferId;
       std::function<bool(CameraBuffer_t*)>
         cameraBufferUpdateFn;
       std::function<bool(ObjectBuffer_t*, uint64_t)>
         objectBufferUpdateFn;
+      std::function<bool(LightBuffer_t*, uint64_t)>
+        lightingBufferUpdateFn;
       std::vector<RenderObject> 
         objects;
+      std::vector<uint64_t>
+        lights;
     };
 
 

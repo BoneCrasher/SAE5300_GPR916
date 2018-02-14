@@ -19,9 +19,9 @@ namespace SAE {
       VertexBuffer_t& underlyingVertexBuffer = pMesh->vertexBuffer();
       underlyingVertexBuffer =
       {
-        {{-0.5f, -0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-        {{+0.5f, -0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-        {{+0.0f,  0.5f, +1.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f, +0.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+        {{+0.5f, -0.5f, +0.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+        {{+0.0f,  0.5f, +0.0f, 1.0f}, {0.0f, 0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}
       };
 
       IndexBuffer_t&  underlyingIndexBuffer = pMesh->indexBuffer();

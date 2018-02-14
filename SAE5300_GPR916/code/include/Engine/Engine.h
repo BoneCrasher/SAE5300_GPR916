@@ -42,12 +42,14 @@ namespace SAE {
     private:
       uint64_t
         m_cameraBuffer,
-        m_objectBuffer;
+        m_objectBuffer,
+        m_lightBuffer;
 
       Camera m_defaultCamera;
       Node   m_hierarchyRoot;
       std::map<uint64_t, SAE::DirectX11::DirectX11MeshPtr> m_meshes;
       std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_transforms;
+      std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_lights;
     };
 
   }
