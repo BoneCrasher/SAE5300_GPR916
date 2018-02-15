@@ -23,9 +23,9 @@ namespace SAE {
 
         return true;
       }
-
-      std::shared_ptr<T> get(uint64_t const&id) {
-        return m_resources[id];
+    protected:
+      bool get(uint64_t const&id, std::shared_ptr<T>&out) {
+        return (out = m_resources[id]) != nullptr;
       }
 
     private:
@@ -39,6 +39,14 @@ namespace SAE {
     public:
       ResourceManager()
       {}
+
+      template <typename T>
+      std::shared_ptr<T> get(uint64_t const&id) {
+        std::shared_ptr<T> ptr = nullptr;
+        this->ResourceHolder<T>::get(id, ptr);
+
+        return ptr;
+      }
     };
 
   }

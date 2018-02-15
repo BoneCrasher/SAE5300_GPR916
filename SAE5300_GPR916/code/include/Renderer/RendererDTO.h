@@ -21,7 +21,8 @@ namespace SAE {
     };
 
     struct LightBuffer_t {
-      XMVECTOR position;
+      XMVECTOR cameraPosition;
+      XMVECTOR lightPosition;
     };
 
     struct RenderObject {

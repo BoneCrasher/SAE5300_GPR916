@@ -7,11 +7,6 @@
 #define RAD(a) (float) ((a / 180.0f) * M_PI)
 #define DEG(r) (float) ((r / M_PI)  * 180.0f)
 
-#define VEC_X(v) v.vector4_f32[0]
-#define VEC_Y(v) v.vector4_f32[1]
-#define VEC_Z(v) v.vector4_f32[2]
-#define VEC_W(v) v.vector4_f32[3]
-
 #include "Platform/DirectX11/DirectX11Common.h"
 #include "Engine/Transform.h"
 

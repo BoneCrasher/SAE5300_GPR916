@@ -43,7 +43,7 @@ VertexOutput main(VertexInput input)
     VertexOutput output;
     output.position           = mul(worldViewProjection, input.position);
     output.worldSpacePosition = mul(world, input.position);
-    output.normal             = mul(worldViewProjection, input.normal);
+    output.normal             = mul(world, input.normal);
     output.color              = input.color;
     return output;
 }

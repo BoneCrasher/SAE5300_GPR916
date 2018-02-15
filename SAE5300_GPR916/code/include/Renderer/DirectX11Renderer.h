@@ -32,6 +32,9 @@ namespace SAE {
         m_resourceManager;
 
       uint64_t m_rasterizerStateId;
+      uint64_t m_dsvTexHandle;
+      uint64_t m_dsvViewHandle;
+      uint64_t m_dssHandle;
 
       D3D11_VIEWPORT m_viewPort;
     };

@@ -52,7 +52,7 @@ namespace SAE {
         = resourceManager->create<ID3D11Buffer>(lightBufferDesc, lightInitialData);
 
       DX11TransformPtr lightTransform = DX11TransformPtr(new DX11Transform());
-      lightTransform->setTranslation(-10.0f, 10.0f, 0.0f);
+      lightTransform->setTranslation(0.0f, 20.0f, 100.0f);
 
       m_lights[1] = lightTransform;
 
@@ -76,13 +76,26 @@ namespace SAE {
       std::shared_ptr<SAE::DirectX11::DirectX11Mesh>
         triangleMesh = nullptr;
 
-      triangleMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "");
+      triangleMesh = SAE::DirectX11::DirectX11Mesh::loadTriangle(resourceManager, "");
 
       DX11TransformPtr triangleTransform = DX11TransformPtr(new DX11Transform());
       triangleTransform->setTranslationZ(5);
 
       m_transforms[triangleId] = triangleTransform;
       m_meshes[triangleId]     = triangleMesh;
+
+      uint64_t cubeId = 2;
+      std::shared_ptr<SAE::DirectX11::DirectX11Mesh>
+        cubeMesh = nullptr;
+
+      cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/OttomanCube.obj");
+
+      DX11TransformPtr cubeTransform = DX11TransformPtr(new DX11Transform());
+      cubeTransform->setTranslationZ(20);
+      cubeTransform->setScale(0.005f, 0.005f, 0.005f);
+
+      m_transforms[cubeId] = cubeTransform;
+      m_meshes[cubeId]     = cubeMesh;
 
       // LOAD TEXTURES HERE!!!
 
@@ -93,7 +106,7 @@ namespace SAE {
         {
           // First children: Triangle
           {
-            triangleId,
+            cubeId,
             {}
           }
         } 
@@ -109,6 +122,31 @@ namespace SAE {
         const Timer::State &time,
         const InputState   &inputState)
     {
+      if(inputState.getPressed(KeyCode::ARROW_UP)) {
+        m_defaultCamera.transform().translateVerticalBy(0.1f);
+      }
+      if(inputState.getPressed(KeyCode::ARROW_DOWN)) {
+        m_defaultCamera.transform().translateVerticalBy(-0.1f);
+      }
+      if(inputState.getPressed(KeyCode::ARROW_LEFT)) {
+        m_defaultCamera.transform().translateLateralBy(-0.1f);
+      }
+      if(inputState.getPressed(KeyCode::ARROW_RIGHT)) {
+        m_defaultCamera.transform().translateLateralBy(0.1f);
+      }
+      if(inputState.getPressed(KeyCode::DNUM8)) {
+        m_defaultCamera.transform().rotateXBy(1.0f);
+      }
+      if(inputState.getPressed(KeyCode::DNUM2)) {
+        m_defaultCamera.transform().rotateXBy(-1.0f);
+      }
+      if(inputState.getPressed(KeyCode::DNUM4)) {
+        m_defaultCamera.transform().rotateYBy(-1.0f);
+      }
+      if(inputState.getPressed(KeyCode::DNUM6)) {
+        m_defaultCamera.transform().rotateYBy(1.0f);
+      }
+
       m_defaultCamera.update();
 
       std::function<void(DX11TransformPtr const&, Node &)>
@@ -116,7 +154,7 @@ namespace SAE {
 
       // Transform all objects
       float rotation = (360.0f / 15.0f) * time.totalElapsed;
-      m_transforms[1]->setRotation(0.0f, rotation, 0.0f);
+      m_transforms[2]->setRotation(0.0f, rotation, 0.0f);
 
       // Update hierarchy to generate world matrices
       DX11TransformPtr parent = DX11TransformPtr(new DX11Transform());
@@ -213,8 +251,10 @@ namespace SAE {
         if(!lightId)
           return false;
 
+        ptr->cameraPosition = m_defaultCamera.transform().getTranslation();
+
         DX11TransformPtr transform = m_lights[lightId];
-        ptr->position = transform->getTranslation();
+        ptr->lightPosition = transform->getTranslation();
         return true;
       };
 

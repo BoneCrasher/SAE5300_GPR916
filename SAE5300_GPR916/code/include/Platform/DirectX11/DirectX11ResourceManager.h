@@ -16,13 +16,15 @@ namespace SAE {
     using namespace SAE::Error;
     using namespace SAE::Resources;
 
-#define SupportedTypes     \
-    ID3D11RasterizerState, \
-    ID3D11Buffer,          \
-    ID3D11InputLayout,     \
-    ID3D11VertexShader,    \
-    ID3D11PixelShader,     \
-    ID3D11Texture2D,       \
+#define SupportedTypes       \
+    ID3D11RasterizerState,   \
+    ID3D11Buffer,            \
+    ID3D11InputLayout,       \
+    ID3D11DepthStencilView,  \
+    ID3D11DepthStencilState, \
+    ID3D11VertexShader,      \
+    ID3D11PixelShader,       \
+    ID3D11Texture2D,         \
     ID3D11Texture3D
 
     class DirectX11ResourceManager 
@@ -89,16 +91,34 @@ namespace SAE {
       (DirectX11ShaderBuffer const& byteCodeBuffer);
 
     template <>
-    uint64_t
+    uint64_t 
       DirectX11ResourceManager
-      ::create<ID3D11Texture2D, 
-               std::string>
-      (std::string const&filename);
+      ::create<ID3D11Texture2D,
+               D3D11_TEXTURE2D_DESC>
+      (D3D11_TEXTURE2D_DESC const&desc);
 
     template <>
     uint64_t
       DirectX11ResourceManager
       ::create<ID3D11Texture3D>();
+    
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11DepthStencilState,
+      D3D11_DEPTH_STENCIL_DESC>
+      (D3D11_DEPTH_STENCIL_DESC const&desc);
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11DepthStencilView,
+               D3D11_DEPTH_STENCIL_VIEW_DESC,
+               ID3D11Texture2D*,
+               D3D11_SUBRESOURCE_DATA>
+      (D3D11_DEPTH_STENCIL_VIEW_DESC  const&desc, 
+       ID3D11Texture2D               *const&texture,
+       D3D11_SUBRESOURCE_DATA         const&initialSubresources);
   }
 }
 

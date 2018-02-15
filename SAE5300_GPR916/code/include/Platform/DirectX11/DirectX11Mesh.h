@@ -18,6 +18,11 @@ namespace SAE {
     public:      
       static  
         std::shared_ptr<DirectX11Mesh> 
+        loadTriangle(
+          std::shared_ptr<DirectX11ResourceManager>      &resourceManager,
+          std::string                               const&filename);
+      static
+        std::shared_ptr<DirectX11Mesh> 
         loadFromFile(
           std::shared_ptr<DirectX11ResourceManager>      &resourceManager,
           std::string                               const&filename);

@@ -16,10 +16,47 @@ namespace SAE {
     {}
 
     bool Renderer::initialize() {
+      ID3D11Texture2D *pTextureUnmanaged = nullptr;
+      HRESULT hres = m_dx11Environment->getSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), ((void**)&pTextureUnmanaged));
+      HandleWINAPIError(hres, "Failed to get underlying swapchain backbuffer texture.");
+
+      D3D11_TEXTURE2D_DESC dsvTexDesc ={};
+      pTextureUnmanaged->GetDesc(&dsvTexDesc);
+      dsvTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+      dsvTexDesc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+      m_dsvTexHandle = m_resourceManager->create<ID3D11Texture2D>(dsvTexDesc);
+      std::shared_ptr<ID3D11Texture2D> pDsvTex = nullptr;
+      pDsvTex = m_resourceManager->get<ID3D11Texture2D>(m_dsvTexHandle);
+
+      D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc ={};
+      dsvDesc.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
+      dsvDesc.Texture2D.MipSlice = 0;
+      dsvDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+      D3D11_SUBRESOURCE_DATA data{};
+      m_dsvViewHandle = m_resourceManager->create<ID3D11DepthStencilView>(dsvDesc, pDsvTex.get(), data);
+
+      D3D11_DEPTH_STENCIL_DESC dssDesc ={};
+      dssDesc.DepthEnable                  = true;
+      dssDesc.DepthFunc                    = D3D11_COMPARISON_LESS;
+      dssDesc.DepthWriteMask               = D3D11_DEPTH_WRITE_MASK_ALL;
+      dssDesc.FrontFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
+      dssDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+      dssDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+      dssDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
+      dssDesc.BackFace.StencilFailOp       = D3D11_STENCIL_OP_KEEP;
+      dssDesc.BackFace.StencilDepthFailOp  = D3D11_STENCIL_OP_DECR;
+      dssDesc.BackFace.StencilPassOp       = D3D11_STENCIL_OP_KEEP;
+      dssDesc.BackFace.StencilFunc         = D3D11_COMPARISON_ALWAYS;
+      dssDesc.StencilEnable  = false;
+
+      m_dssHandle = m_resourceManager->create<ID3D11DepthStencilState>(dssDesc);
+
       D3D11_RASTERIZER_DESC desc={};
       desc.FillMode              = D3D11_FILL_SOLID;
       desc.CullMode              = D3D11_CULL_BACK;
-      desc.FrontCounterClockwise = false;
+      desc.FrontCounterClockwise = true;
       desc.AntialiasedLineEnable = false;
       desc.MultisampleEnable     = false;
       desc.ScissorEnable         = false;
@@ -46,15 +83,19 @@ namespace SAE {
     {
       ID3D11DeviceContextPtr context = m_dx11Environment->getImmediateContext();
 
-      ID3D11RenderTargetView *renderTarget    = m_dx11Environment->getMainRenderTarget().get();
-      ID3D11RasterizerState  *rasterizerState = reinterpret_cast<ID3D11RasterizerState*>(m_rasterizerStateId);
+      ID3D11RenderTargetView  *renderTarget      = m_dx11Environment->getMainRenderTarget().get();
+      ID3D11DepthStencilView  *depthStencilView  = reinterpret_cast<ID3D11DepthStencilView*>(m_dsvViewHandle);
+      ID3D11DepthStencilState *depthStencilState = reinterpret_cast<ID3D11DepthStencilState*>(m_dssHandle);
+      ID3D11RasterizerState   *rasterizerState   = reinterpret_cast<ID3D11RasterizerState*>(m_rasterizerStateId);
 
       FLOAT color[4] ={ 0.5f, 0.5f, 0.5f, 1.0f };
       context->ClearRenderTargetView(renderTarget, color);
+      context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0xFF);
       context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
       context->RSSetState(rasterizerState);
       context->RSSetViewports(1, &m_viewPort);
-      context->OMSetRenderTargets(1, &renderTarget, nullptr);
+      context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+      context->OMSetDepthStencilState(depthStencilState, 0);
 
       ID3D11Buffer *cameraBuffer =reinterpret_cast<ID3D11Buffer*>(scene.cameraBufferId);
       ID3D11Buffer *objectBuffer =reinterpret_cast<ID3D11Buffer*>(scene.objectBufferId);

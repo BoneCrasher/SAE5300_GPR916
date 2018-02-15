@@ -54,6 +54,8 @@ namespace SAE {
       void update();
       void deinitialize();
 
+      inline DX11Transform & transform() { return m_transform; }
+
     private:
       void createViewMatrix();
       void createProjectionMatrix();
