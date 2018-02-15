@@ -1,0 +1,11 @@
+prefix=F:/SAE/5300/ext/assimp/deploy/Win64/Debug
+exec_prefix=F:/SAE/5300/ext/assimp/deploy/Win64/Debug/
+libdir=F:/SAE/5300/ext/assimp/deploy/Win64/Debug/lib
+includedir=F:/SAE/5300/ext/assimp/deploy/Win64/Debug/include/assimp
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 4.0.1
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}
