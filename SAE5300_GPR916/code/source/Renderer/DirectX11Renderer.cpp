@@ -25,7 +25,9 @@ namespace SAE {
       dsvTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
       dsvTexDesc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-      m_dsvTexHandle = m_resourceManager->create<ID3D11Texture2D>(dsvTexDesc);
+      std::vector<D3D11_SUBRESOURCE_DATA> emptyRenderTargetData{};
+
+      m_dsvTexHandle = m_resourceManager->create<ID3D11Texture2D>(dsvTexDesc, emptyRenderTargetData);
       std::shared_ptr<ID3D11Texture2D> pDsvTex = nullptr;
       pDsvTex = m_resourceManager->get<ID3D11Texture2D>(m_dsvTexHandle);
 
@@ -70,6 +72,14 @@ namespace SAE {
       m_viewPort.Height   = m_dx11Environment->getSelectedMode().height;
       m_viewPort.MinDepth = 0.0;
       m_viewPort.MaxDepth = 1.0;
+
+      D3D11_SAMPLER_DESC ssDesc={};
+      ssDesc.Filter   = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+      ssDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      ssDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      ssDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      m_defaultSamplerStateId = m_resourceManager->create<ID3D11SamplerState>(ssDesc);
+
       return true;
     }
 
@@ -87,6 +97,7 @@ namespace SAE {
       ID3D11DepthStencilView  *depthStencilView  = reinterpret_cast<ID3D11DepthStencilView*>(m_dsvViewHandle);
       ID3D11DepthStencilState *depthStencilState = reinterpret_cast<ID3D11DepthStencilState*>(m_dssHandle);
       ID3D11RasterizerState   *rasterizerState   = reinterpret_cast<ID3D11RasterizerState*>(m_rasterizerStateId);
+      ID3D11SamplerState      *defaultSampler    = reinterpret_cast<ID3D11SamplerState*>(m_defaultSamplerStateId);
 
       FLOAT color[4] ={ 0.5f, 0.5f, 0.5f, 1.0f };
       context->ClearRenderTargetView(renderTarget, color);
@@ -137,6 +148,11 @@ namespace SAE {
         ID3D11VertexShader *vertexShader = reinterpret_cast<ID3D11VertexShader*>(object.vertexShaderId);
         ID3D11PixelShader  *pixelShader  = reinterpret_cast<ID3D11PixelShader*>(object.pixelShaderId);
 
+        ID3D11ShaderResourceView *diffuseTexture  = reinterpret_cast<ID3D11ShaderResourceView*>(object.diffuseTextureSRVId);
+        ID3D11ShaderResourceView *specularTexture = reinterpret_cast<ID3D11ShaderResourceView*>(object.specularTextureSRVId);
+        ID3D11ShaderResourceView *glossTexture    = reinterpret_cast<ID3D11ShaderResourceView*>(object.glossTextureSRVId);
+
+
         D3D11_BUFFER_DESC indexBufferDesc ={};
         indexBuffer->GetDesc(&indexBufferDesc);
 
@@ -154,6 +170,9 @@ namespace SAE {
 
         context->VSSetConstantBuffers(1, 1, &objectBuffer);
 
+        std::vector<ID3D11ShaderResourceView*> psSRV
+          ={ diffuseTexture, specularTexture, glossTexture };
+
         std::size_t vertexSize = sizeof(Mesh<XMVECTOR>::Vertex_t);
         std::size_t offset     = 0;
         context->IASetInputLayout(inputLayout);
@@ -161,6 +180,8 @@ namespace SAE {
         context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
         context->VSSetShader(vertexShader, nullptr, 0);
         context->PSSetShader(pixelShader, nullptr, 0);
+        context->PSSetShaderResources(0, psSRV.size(), psSRV.data());
+        context->PSSetSamplers(0, 1, &defaultSampler);
 
         context->DrawIndexed(indexBufferSize, 0, 0);
       }

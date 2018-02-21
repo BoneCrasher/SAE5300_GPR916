@@ -5,6 +5,8 @@
 
 #include "Engine/Engine.h"
 
+#include "Platform/DirectX11/DirectX11Texture.h"
+
 namespace SAE {
   namespace Engine {
     using namespace SAE::Log;   
@@ -52,7 +54,7 @@ namespace SAE {
         = resourceManager->create<ID3D11Buffer>(lightBufferDesc, lightInitialData);
 
       DX11TransformPtr lightTransform = DX11TransformPtr(new DX11Transform());
-      lightTransform->setTranslation(0.0f, 20.0f, 100.0f);
+      lightTransform->setTranslation(0.0f, 20.0f, 40.0f);
 
       m_lights[1] = lightTransform;
 
@@ -88,16 +90,31 @@ namespace SAE {
       std::shared_ptr<SAE::DirectX11::DirectX11Mesh>
         cubeMesh = nullptr;
 
-      cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/OttomanCube.obj");
+      cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/Sci-Fi-Floor-1-OBJ.obj");
 
       DX11TransformPtr cubeTransform = DX11TransformPtr(new DX11Transform());
       cubeTransform->setTranslationZ(20);
-      cubeTransform->setScale(0.005f, 0.005f, 0.005f);
+      cubeTransform->setScale(3.0f, 3.0f, 3.0f);
 
       m_transforms[cubeId] = cubeTransform;
       m_meshes[cubeId]     = cubeMesh;
 
-      // LOAD TEXTURES HERE!!!
+      // LOAD TEXTURES HERE!!!      
+      if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Diffuse.tga", m_diffuseTextureId, m_diffuseTextureSRVId)) {
+        // Ohoh...
+        m_diffuseTextureId = 0;
+        m_diffuseTextureSRVId = 0;
+      }
+      if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Specular.tga", m_specularTextureId, m_specularTextureSRVId)) {
+        // Ohoh...
+        m_specularTextureId = 0;
+        m_specularTextureSRVId = 0;
+      }
+      if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Gloss.tga", m_glossTextureId, m_glossTextureSRVId)) {
+        // Ohoh...
+        m_glossTextureId = 0;
+        m_glossTextureSRVId = 0;
+      }
 
       // HIERARCHY GOES HERE!!!
       Node root = 
@@ -113,6 +130,8 @@ namespace SAE {
       };
 
       m_hierarchyRoot = root;
+
+      m_displayMode = 1; // Normal
 
       return true;
     }
@@ -134,6 +153,12 @@ namespace SAE {
       if(inputState.getPressed(KeyCode::ARROW_RIGHT)) {
         m_defaultCamera.transform().translateLateralBy(0.1f);
       }
+      if(inputState.getPressed(KeyCode::DNUM7)) {
+        m_defaultCamera.transform().translateDirectionalBy(-0.1f);
+      }
+      if(inputState.getPressed(KeyCode::DNUM9)) {
+        m_defaultCamera.transform().translateDirectionalBy(0.1f);
+      }
       if(inputState.getPressed(KeyCode::DNUM8)) {
         m_defaultCamera.transform().rotateXBy(1.0f);
       }
@@ -145,6 +170,42 @@ namespace SAE {
       }
       if(inputState.getPressed(KeyCode::DNUM6)) {
         m_defaultCamera.transform().rotateYBy(1.0f);
+      }
+
+
+      if(inputState.getPressed(KeyCode::W)) {
+        m_lights[1]->translateDirectionalBy(0.1f);
+      }
+      if(inputState.getPressed(KeyCode::A)) {
+        m_lights[1]->translateLateralBy(-0.1f);
+      }
+      if(inputState.getPressed(KeyCode::S)) {
+        m_lights[1]->translateDirectionalBy(-0.1);
+      }
+      if(inputState.getPressed(KeyCode::D)) {
+        m_lights[1]->translateLateralBy(0.1f);
+      }
+      if(inputState.getPressed(KeyCode::Q)) {
+        m_lights[1]->translateVerticalBy(-0.1f);
+      }
+      if(inputState.getPressed(KeyCode::E)) {
+        m_lights[1]->translateVerticalBy(0.1f);
+      }
+
+      if(inputState.getPressed(KeyCode::D1)) {
+        m_displayMode = 1;
+      }
+      if(inputState.getPressed(KeyCode::D2)) {
+        m_displayMode = 2;
+      }
+      if(inputState.getPressed(KeyCode::D3)) {
+        m_displayMode = 3;
+      }
+      if(inputState.getPressed(KeyCode::D4)) {
+        m_displayMode = 4;
+      }
+      if(inputState.getPressed(KeyCode::D5)) {
+        m_displayMode = 5;
       }
 
       m_defaultCamera.update();
@@ -203,12 +264,16 @@ namespace SAE {
           mesh = m_meshes[root.objectId];
 
           if(mesh) {
-            object.objectId       = root.objectId;
-            object.vertexBufferId = mesh->vertexBufferHandle();
-            object.indexBufferId  = mesh->indexBufferHandle();
-            object.inputLayoutId  = mesh->inputLayoutHandle();
-            object.vertexShaderId = mesh->vertexShaderHandle();
-            object.pixelShaderId  = mesh->pixelShaderHandle();
+            object.objectId            = root.objectId;
+            object.vertexBufferId      = mesh->vertexBufferHandle();
+            object.indexBufferId       = mesh->indexBufferHandle();
+            object.inputLayoutId       = mesh->inputLayoutHandle();
+            object.vertexShaderId      = mesh->vertexShaderHandle();
+            object.pixelShaderId       = mesh->pixelShaderHandle();
+            // Register textures
+            object.diffuseTextureSRVId  = m_diffuseTextureSRVId;
+            object.specularTextureSRVId = m_specularTextureSRVId;
+            object.glossTextureSRVId    = m_glossTextureSRVId;
           }
         }
         
@@ -251,10 +316,35 @@ namespace SAE {
         if(!lightId)
           return false;
 
-        ptr->cameraPosition = m_defaultCamera.transform().getTranslation();
-
+        ptr->cameraPosition  = m_defaultCamera.transform().getTranslation();
+        ptr->cameraDirection = m_defaultCamera.transform().getDirection();
+        
         DX11TransformPtr transform = m_lights[lightId];
-        ptr->lightPosition = transform->getTranslation();
+        transform->worldMatrix(XMMatrixIdentity(), nullptr);
+        ptr->lights[0] = transform->composedWorldMatrix();
+        // First column: Color
+        ptr->lights[0].m[0][0] = 1.0f;
+        ptr->lights[0].m[0][1] = 1.0f;
+        ptr->lights[0].m[0][2] = 1.0f;
+        // Second column: Falloff Properties
+        ptr->lights[0].m[1][0] = 5.0f;
+        ptr->lights[0].m[1][1] = 1.0f;
+        ptr->lights[0].m[1][2] = 1.0f;
+        // Third column: Direction
+        // Fourth column: Falloff Properties
+        ptr->lights[0].m[0][3] = 1.0f;       // 0-Dir, 1-Point, 2-Spot
+        ptr->lights[0].m[1][3] = 1.0f;       // Intensity
+        ptr->lights[0].m[2][3] = RAD(30.0f); // Hot Spot Angle
+        ptr->lights[0].m[3][3] = RAD(5.0f);  // Falloff Beam Angle
+
+        // Clean 
+        ptr->lights[1] = XMMatrixIdentity();
+        ptr->lights[2] = XMMatrixIdentity();
+        ptr->lights[3] = XMMatrixIdentity();
+
+        ptr->displayMode = m_displayMode;
+        ptr->lightIndex  = 0;
+        
         return true;
       };
 

@@ -36,6 +36,8 @@ namespace SAE {
       uint64_t m_dsvViewHandle;
       uint64_t m_dssHandle;
 
+      uint64_t m_defaultSamplerStateId;
+
       D3D11_VIEWPORT m_viewPort;
     };
 

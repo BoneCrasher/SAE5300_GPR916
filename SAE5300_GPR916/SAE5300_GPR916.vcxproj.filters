@@ -81,6 +81,12 @@
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Lighting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="code\include\Engine\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="code\include\Platform\DirectX11\DirectX11Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -120,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="code\source\Platform\DirectX11\DirectX11Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="code\source\Engine\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <functional>
+#include <stdint.h>
 
 #include "Platform/DirectX11/DirectX11Common.h"
 
@@ -21,8 +22,13 @@ namespace SAE {
     };
 
     struct LightBuffer_t {
+      XMMATRIX lights[4];
       XMVECTOR cameraPosition;
-      XMVECTOR lightPosition;
+      XMVECTOR cameraDirection;
+      uint32_t displayMode;
+      uint32_t lightIndex;
+      uint32_t unused1;
+      uint32_t unused2;
     };
 
     struct RenderObject {
@@ -32,7 +38,10 @@ namespace SAE {
         indexBufferId,
         inputLayoutId,
         vertexShaderId,
-        pixelShaderId;
+        pixelShaderId,
+        diffuseTextureSRVId,
+        specularTextureSRVId,
+        glossTextureSRVId;
     };
 
     struct RenderScene {

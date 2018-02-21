@@ -18,17 +18,21 @@ cbuffer Object : register(b1)
 struct VertexInput
 {
     float4 position : POSITION0;
-    float4 normal : NORMAL0;
-    float4 color : COLOR0;
+    float4 normal   : NORMAL0;
+    float4 tangent  : TANGENT0;
+    float4 uv       : TEXCOORD0;
+    float4 color    : COLOR0;
 };
 
 // This thing goes into the subsequent stages.
 struct VertexOutput
 {
-    float4 position : SV_Position;
+    float4 position           : SV_Position;
     float4 worldSpacePosition : POSITION0;
-    float4 normal : NORMAL0;
-    float4 color : COLOR0;
+    float4 normal             : NORMAL0;
+    float4 tangent            : TANGENT0;
+    float4 uv                 : TEXCOORD0;
+    float4 color              : COLOR0;
 };
 
 // Do It!
@@ -44,6 +48,7 @@ VertexOutput main(VertexInput input)
     output.position           = mul(worldViewProjection, input.position);
     output.worldSpacePosition = mul(world, input.position);
     output.normal             = mul(world, input.normal);
+    output.uv                 = input.uv;
     output.color              = input.color;
     return output;
 }

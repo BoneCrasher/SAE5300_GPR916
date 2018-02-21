@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 
+#include "Engine/Texture.h"
 #include "Platform/ResourceManager.h"
 
 #include "DirectX11Common.h"
@@ -15,6 +16,7 @@ namespace SAE {
   namespace DirectX11 {
     using namespace SAE::Error;
     using namespace SAE::Resources;
+    using namespace SAE::Texture;
 
 #define SupportedTypes       \
     ID3D11RasterizerState,   \
@@ -25,7 +27,9 @@ namespace SAE {
     ID3D11VertexShader,      \
     ID3D11PixelShader,       \
     ID3D11Texture2D,         \
-    ID3D11Texture3D
+    ID3D11Texture3D,         \
+    ID3D11ShaderResourceView, \
+    ID3D11SamplerState
 
     class DirectX11ResourceManager 
       : public ResourceManager<SupportedTypes>
@@ -91,11 +95,13 @@ namespace SAE {
       (DirectX11ShaderBuffer const& byteCodeBuffer);
 
     template <>
-    uint64_t 
+    uint64_t
       DirectX11ResourceManager
-      ::create<ID3D11Texture2D,
-               D3D11_TEXTURE2D_DESC>
-      (D3D11_TEXTURE2D_DESC const&desc);
+      ::create < ID3D11Texture2D,
+               D3D11_TEXTURE2D_DESC,
+               std::vector<D3D11_SUBRESOURCE_DATA>>
+      (D3D11_TEXTURE2D_DESC                const&desc,
+       std::vector<D3D11_SUBRESOURCE_DATA> const&initialData);
 
     template <>
     uint64_t
@@ -119,6 +125,22 @@ namespace SAE {
       (D3D11_DEPTH_STENCIL_VIEW_DESC  const&desc, 
        ID3D11Texture2D               *const&texture,
        D3D11_SUBRESOURCE_DATA         const&initialSubresources);
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11ShaderResourceView,
+                D3D11_SHADER_RESOURCE_VIEW_DESC,
+                ID3D11Texture2D*>
+      (D3D11_SHADER_RESOURCE_VIEW_DESC  const&desc, 
+       ID3D11Texture2D                 *const&texture);
+
+    template <>
+    uint64_t 
+      DirectX11ResourceManager
+      ::create<ID3D11SamplerState,
+               D3D11_SAMPLER_DESC> 
+      (D3D11_SAMPLER_DESC const&desc);
   }
 }
 

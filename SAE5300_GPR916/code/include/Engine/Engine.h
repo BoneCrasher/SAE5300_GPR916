@@ -50,6 +50,16 @@ namespace SAE {
       std::map<uint64_t, SAE::DirectX11::DirectX11MeshPtr> m_meshes;
       std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_transforms;
       std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_lights;
+
+      uint64_t 
+        m_diffuseTextureId,
+        m_diffuseTextureSRVId,
+        m_specularTextureId,
+        m_specularTextureSRVId,
+        m_glossTextureId,
+        m_glossTextureSRVId;
+
+      uint32_t m_displayMode;
     };
 
   }

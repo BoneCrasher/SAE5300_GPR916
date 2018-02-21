@@ -161,38 +161,6 @@ namespace SAE {
       ShaderCreationFunction(ID3D11PixelShader, CreatePixelShader);
     }
 
-    template <>
-    uint64_t DirectX11ResourceManager
-      ::create<ID3D11Texture2D, 
-               D3D11_TEXTURE2D_DESC>
-      (D3D11_TEXTURE2D_DESC const&desc)
-    {
-      // ---------------------------------------------------------------
-      // RCA -> Resource Creation Algorithm 
-      // ---------------------------------------------------------------
-      // 1. Declare unmanaged null initialized pointer of specific type
-      ID3D11Texture2D
-        *pTexUnmanaged = nullptr;
-
-      // 2. Call ID3D11Device creation function and handle error
-      HRESULT hres = m_device->CreateTexture2D(&desc, nullptr, &pTexUnmanaged);
-      HandleWINAPIError(hres, "Failed to create input layout.");
-
-      // 3. Create unique id by abusing reinterpret_cast to uint64_t
-      uint64_t id = reinterpret_cast<uint64_t>(pTexUnmanaged);
-
-      // 4. Create managed directX shared pointer
-      std::shared_ptr<ID3D11Texture2D>
-        pTexManaged
-        = MakeDirectX11ResourceSharedPointer(pTexUnmanaged);
-
-      // 5. Push to resource holder
-      this->ResourceHolder<ID3D11Texture2D>
-        ::set(id, pTexManaged);
-
-      // 6. Return id
-      return id;
-    }
 
     template <>
     uint64_t
@@ -257,7 +225,7 @@ namespace SAE {
 
       // 2. Call ID3D11Device creation function and handle error
       HRESULT hres = m_device->CreateDepthStencilView(texture, &desc, &pDSVUnmanaged);
-      HandleWINAPIError(hres, "Failed to create input layout.");
+      HandleWINAPIError(hres, "Failed to create depth stencil view.");
 
       // 3. Create unique id by abusing reinterpret_cast to uint64_t
       uint64_t id = reinterpret_cast<uint64_t>(pDSVUnmanaged);
@@ -270,6 +238,116 @@ namespace SAE {
       // 5. Push to resource holder
       this->ResourceHolder<ID3D11DepthStencilView>
         ::set(id, pDSVManaged);
+
+      // 6. Return id
+      return id;
+    }
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create < ID3D11Texture2D,
+                 D3D11_TEXTURE2D_DESC,
+      std::vector<D3D11_SUBRESOURCE_DATA>>
+      (D3D11_TEXTURE2D_DESC                const&desc,
+       std::vector<D3D11_SUBRESOURCE_DATA> const&initialData)
+    {
+
+      // ---------------------------------------------------------------
+      // RCA -> Resource Creation Algorithm 
+      // ---------------------------------------------------------------
+      // 1. Declare unmanaged null initialized pointer of specific type
+      ID3D11Texture2D
+        *pTexUnmanaged = nullptr;
+
+      // 2. Call ID3D11Device creation function and handle error
+      HRESULT hres = m_device->CreateTexture2D(&desc, initialData.data(), &pTexUnmanaged);
+      HandleWINAPIError(hres, "Failed to create texture 2d.");
+
+      // 3. Create unique id by abusing reinterpret_cast to uint64_t
+      uint64_t id = reinterpret_cast<uint64_t>(pTexUnmanaged);
+
+      // 4. Create managed directX shared pointer
+      std::shared_ptr<ID3D11Texture2D>
+        pTexManaged
+        = MakeDirectX11ResourceSharedPointer(pTexUnmanaged);
+
+      // 5. Push to resource holder
+      this->ResourceHolder<ID3D11Texture2D>
+        ::set(id, pTexManaged);
+
+      // 6. Return id
+      return id;
+    }
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11ShaderResourceView,
+      D3D11_SHADER_RESOURCE_VIEW_DESC,
+      ID3D11Texture2D*>
+      (D3D11_SHADER_RESOURCE_VIEW_DESC  const&desc, 
+       ID3D11Texture2D               *const&texture)
+    {
+
+      // ---------------------------------------------------------------
+      // RCA -> Resource Creation Algorithm 
+      // ---------------------------------------------------------------
+      // 1. Declare unmanaged null initialized pointer of specific type
+      ID3D11ShaderResourceView
+        *pSRVUnmanaged = nullptr;
+
+      // 2. Call ID3D11Device creation function and handle error
+      HRESULT hres = m_device->CreateShaderResourceView(texture, &desc, &pSRVUnmanaged);
+      HandleWINAPIError(hres, "Failed to create shader resource view.");
+
+      // 3. Create unique id by abusing reinterpret_cast to uint64_t
+      uint64_t id = reinterpret_cast<uint64_t>(pSRVUnmanaged);
+
+      // 4. Create managed directX shared pointer
+      std::shared_ptr<ID3D11ShaderResourceView>
+        pSRVManaged
+        = MakeDirectX11ResourceSharedPointer(pSRVUnmanaged);
+
+      // 5. Push to resource holder
+      this->ResourceHolder<ID3D11ShaderResourceView>
+        ::set(id, pSRVManaged);
+
+      // 6. Return id
+      return id;
+    }
+
+
+    template <>
+    uint64_t 
+      DirectX11ResourceManager
+      ::create<ID3D11SamplerState,
+               D3D11_SAMPLER_DESC>
+      (D3D11_SAMPLER_DESC const&desc)
+    {
+
+      // ---------------------------------------------------------------
+      // RCA -> Resource Creation Algorithm 
+      // ---------------------------------------------------------------
+      // 1. Declare unmanaged null initialized pointer of specific type
+      ID3D11SamplerState
+        *pSSUnmanaged = nullptr;
+
+      // 2. Call ID3D11Device creation function and handle error
+      HRESULT hres = m_device->CreateSamplerState(&desc, &pSSUnmanaged);
+      HandleWINAPIError(hres, "Failed to create shader resource view.");
+
+      // 3. Create unique id by abusing reinterpret_cast to uint64_t
+      uint64_t id = reinterpret_cast<uint64_t>(pSSUnmanaged);
+
+      // 4. Create managed directX shared pointer
+      std::shared_ptr<ID3D11SamplerState>
+        pSSManaged
+        = MakeDirectX11ResourceSharedPointer(pSSUnmanaged);
+
+      // 5. Push to resource holder
+      this->ResourceHolder<ID3D11SamplerState>
+        ::set(id, pSSManaged);
 
       // 6. Return id
       return id;
