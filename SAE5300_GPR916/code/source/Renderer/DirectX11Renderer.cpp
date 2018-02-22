@@ -111,6 +111,7 @@ namespace SAE {
       ID3D11Buffer *cameraBuffer =reinterpret_cast<ID3D11Buffer*>(scene.cameraBufferId);
       ID3D11Buffer *objectBuffer =reinterpret_cast<ID3D11Buffer*>(scene.objectBufferId);
       ID3D11Buffer *lightBuffer  =reinterpret_cast<ID3D11Buffer*>(scene.lightBufferId);
+      ID3D11Buffer *otherBuffer  =reinterpret_cast<ID3D11Buffer*>(scene.otherBufferId);
 
       D3D11_MAPPED_SUBRESOURCE mapped ={};
       context->Map(
@@ -124,6 +125,7 @@ namespace SAE {
       context->Unmap(cameraBuffer, 0);
 
       context->VSSetConstantBuffers(0, 1, &cameraBuffer);
+      context->PSSetConstantBuffers(0, 1, &cameraBuffer);
 
       // Lights
       for(uint64_t const&lightId : scene.lights) {
@@ -137,8 +139,22 @@ namespace SAE {
           scene.lightingBufferUpdateFn(static_cast<LightBuffer_t*>(mapped.pData), lightId);
         context->Unmap(lightBuffer, 0);
       }
+      
+      context->PSSetConstantBuffers(1, 1, &lightBuffer);
 
-      context->PSSetConstantBuffers(0, 1, &lightBuffer);
+      // Other
+      mapped ={};
+      context->Map(
+        otherBuffer,
+        0,
+        D3D11_MAP_WRITE_DISCARD,
+        0,
+        &mapped);
+      if(scene.otherBufferUpdateFn)
+        scene.otherBufferUpdateFn(static_cast<OtherBuffer_t*>(mapped.pData));
+      context->Unmap(otherBuffer, 0);
+
+      // context->PSSetConstantBuffers(2, 1, &otherBuffer);
 
       // Objects
       for(RenderObject const&object : scene.objects) {
@@ -151,6 +167,7 @@ namespace SAE {
         ID3D11ShaderResourceView *diffuseTexture  = reinterpret_cast<ID3D11ShaderResourceView*>(object.diffuseTextureSRVId);
         ID3D11ShaderResourceView *specularTexture = reinterpret_cast<ID3D11ShaderResourceView*>(object.specularTextureSRVId);
         ID3D11ShaderResourceView *glossTexture    = reinterpret_cast<ID3D11ShaderResourceView*>(object.glossTextureSRVId);
+        ID3D11ShaderResourceView *normalTexture   = reinterpret_cast<ID3D11ShaderResourceView*>(object.normalTextureSRVId);
 
 
         D3D11_BUFFER_DESC indexBufferDesc ={};
@@ -171,7 +188,7 @@ namespace SAE {
         context->VSSetConstantBuffers(1, 1, &objectBuffer);
 
         std::vector<ID3D11ShaderResourceView*> psSRV
-          ={ diffuseTexture, specularTexture, glossTexture };
+          ={ diffuseTexture, specularTexture, glossTexture, normalTexture };
 
         std::size_t vertexSize = sizeof(Mesh<XMVECTOR>::Vertex_t);
         std::size_t offset     = 0;

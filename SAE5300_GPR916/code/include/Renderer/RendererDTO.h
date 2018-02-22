@@ -15,18 +15,26 @@ namespace SAE {
     struct CameraBuffer_t {
       XMMATRIX view;
       XMMATRIX projection;
+      XMVECTOR cameraPosition;
+      XMVECTOR cameraDirection;
     };
 
     struct ObjectBuffer_t {
       XMMATRIX world;
+      XMMATRIX invTransposeWorld;
     };
 
     struct LightBuffer_t {
       XMMATRIX lights[4];
-      XMVECTOR cameraPosition;
-      XMVECTOR cameraDirection;
-      uint32_t displayMode;
       uint32_t lightIndex;
+      uint32_t unused0;
+      uint32_t unused1;
+      uint32_t unused2;
+    };
+
+    struct OtherBuffer_t {
+      uint32_t displayMode;
+      uint32_t unused0;
       uint32_t unused1;
       uint32_t unused2;
     };
@@ -41,20 +49,24 @@ namespace SAE {
         pixelShaderId,
         diffuseTextureSRVId,
         specularTextureSRVId,
-        glossTextureSRVId;
+        glossTextureSRVId,
+        normalTextureSRVId;
     };
 
     struct RenderScene {
       uint64_t
         cameraBufferId,
         objectBufferId,
-        lightBufferId;
+        lightBufferId,
+        otherBufferId;
       std::function<bool(CameraBuffer_t*)>
         cameraBufferUpdateFn;
       std::function<bool(ObjectBuffer_t*, uint64_t)>
         objectBufferUpdateFn;
       std::function<bool(LightBuffer_t*, uint64_t)>
         lightingBufferUpdateFn;
+      std::function<bool(OtherBuffer_t*)>
+        otherBufferUpdateFn;
       std::vector<RenderObject> 
         objects;
       std::vector<uint64_t>

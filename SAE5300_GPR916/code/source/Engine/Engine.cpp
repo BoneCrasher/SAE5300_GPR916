@@ -73,6 +73,22 @@ namespace SAE {
       m_objectBuffer
         = resourceManager->create<ID3D11Buffer>(objectBufferDesc, objectInitialData);
       
+      D3D11_BUFFER_DESC
+        otherBufferDesc ={};
+      otherBufferDesc.ByteWidth           = sizeof(OtherBuffer_t);
+      otherBufferDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+      otherBufferDesc.Usage               = D3D11_USAGE_DYNAMIC;
+      otherBufferDesc.MiscFlags           = 0;
+      otherBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+      otherBufferDesc.StructureByteStride = 0;
+
+      D3D11_SUBRESOURCE_DATA
+        otherInitialData={};
+
+      m_otherBuffer
+        = resourceManager->create<ID3D11Buffer>(otherBufferDesc, otherInitialData);
+
+
       // LOAD MESHES HERE!!!
       uint64_t triangleId = 1;
       std::shared_ptr<SAE::DirectX11::DirectX11Mesh>
@@ -90,7 +106,8 @@ namespace SAE {
       std::shared_ptr<SAE::DirectX11::DirectX11Mesh>
         cubeMesh = nullptr;
 
-      cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/Sci-Fi-Floor-1-OBJ.obj");
+      // cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/Sci-Fi-Floor-1-OBJ.obj");
+      cubeMesh = SAE::DirectX11::DirectX11Mesh::loadFromFile(resourceManager, "resources/meshes/fourQuadPlane.obj");
 
       DX11TransformPtr cubeTransform = DX11TransformPtr(new DX11Transform());
       cubeTransform->setTranslationZ(20);
@@ -98,6 +115,9 @@ namespace SAE {
 
       m_transforms[cubeId] = cubeTransform;
       m_meshes[cubeId]     = cubeMesh;
+      
+      lightTransform->setTranslation(cubeTransform->getTranslation()); // Place light in the middle of the plane and shift up
+      lightTransform->translateVerticalBy(10);
 
       // LOAD TEXTURES HERE!!!      
       if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Diffuse.tga", m_diffuseTextureId, m_diffuseTextureSRVId)) {
@@ -115,6 +135,11 @@ namespace SAE {
         m_glossTextureId = 0;
         m_glossTextureSRVId = 0;
       }
+      if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Normal.tga", m_normalTextureId, m_normalTextureSRVId)) {
+        // Ohoh...
+        m_normalTextureId = 0;
+        m_normalTextureSRVId = 0;
+      }
 
       // HIERARCHY GOES HERE!!!
       Node root = 
@@ -122,6 +147,10 @@ namespace SAE {
         0,
         {
           // First children: Triangle
+          {
+            triangleId,
+            {}
+          },
           {
             cubeId,
             {}
@@ -214,7 +243,7 @@ namespace SAE {
         updateHierarchyFn = nullptr;
 
       // Transform all objects
-      float rotation = (360.0f / 15.0f) * time.totalElapsed;
+      float rotation = (360.0f / 30.0f) * time.totalElapsed;
       m_transforms[2]->setRotation(0.0f, rotation, 0.0f);
 
       // Update hierarchy to generate world matrices
@@ -274,6 +303,7 @@ namespace SAE {
             object.diffuseTextureSRVId  = m_diffuseTextureSRVId;
             object.specularTextureSRVId = m_specularTextureSRVId;
             object.glossTextureSRVId    = m_glossTextureSRVId;
+            object.normalTextureSRVId   = m_normalTextureSRVId;
           }
         }
         
@@ -291,11 +321,15 @@ namespace SAE {
       sceneHolder.cameraBufferId = m_cameraBuffer;
       sceneHolder.objectBufferId = m_objectBuffer;
       sceneHolder.lightBufferId  = m_lightBuffer;
+      sceneHolder.otherBufferId  = m_otherBuffer;
       sceneHolder.cameraBufferUpdateFn = 
         [this] (CameraBuffer_t *ptr) -> bool
       {
-        ptr->view       = m_defaultCamera.viewMatrix();
-        ptr->projection = m_defaultCamera.projectionMatrix();
+        ptr->view            = m_defaultCamera.viewMatrix();
+        ptr->projection      = m_defaultCamera.projectionMatrix();
+        ptr->cameraPosition  = m_defaultCamera.transform().getTranslation();
+        ptr->cameraDirection = m_defaultCamera.transform().getDirection();
+
         return true;
       };
 
@@ -305,8 +339,16 @@ namespace SAE {
         if(!objectId)
           return false;
 
-        DX11TransformPtr transform = m_transforms[objectId];
-        ptr->world = transform->composedWorldMatrix();
+        if(objectId == 1) { // TRiangle for light
+          DX11TransformPtr transform = m_lights[1];
+          ptr->world             = transform->composedWorldMatrix();
+          ptr->invTransposeWorld = XMMatrixTranspose(XMMatrixInverse(nullptr, ptr->world));
+        }
+        else {
+          DX11TransformPtr transform = m_transforms[objectId];
+          ptr->world             = transform->composedWorldMatrix();
+          ptr->invTransposeWorld = XMMatrixTranspose(XMMatrixInverse(nullptr, ptr->world));
+        }
         return true;
       };
 
@@ -316,9 +358,6 @@ namespace SAE {
         if(!lightId)
           return false;
 
-        ptr->cameraPosition  = m_defaultCamera.transform().getTranslation();
-        ptr->cameraDirection = m_defaultCamera.transform().getDirection();
-        
         DX11TransformPtr transform = m_lights[lightId];
         transform->worldMatrix(XMMatrixIdentity(), nullptr);
         ptr->lights[0] = transform->composedWorldMatrix();
@@ -342,12 +381,18 @@ namespace SAE {
         ptr->lights[2] = XMMatrixIdentity();
         ptr->lights[3] = XMMatrixIdentity();
 
-        ptr->displayMode = m_displayMode;
         ptr->lightIndex  = 0;
         
         return true;
       };
 
+      sceneHolder.otherBufferUpdateFn = 
+        [this] (OtherBuffer_t *ptr) -> bool
+      {
+        ptr->displayMode = m_displayMode;
+
+        return true;
+      };
 
       return true;
     }

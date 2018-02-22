@@ -146,7 +146,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="code\shader\standard_vertex_shader.hlsl" />
     <FxCompile Include="code\shader\standard_fragment_shader.hlsl" />
+    <FxCompile Include="code\shader\standard_vertex_shader.hlsl" />
   </ItemGroup>
 </Project>

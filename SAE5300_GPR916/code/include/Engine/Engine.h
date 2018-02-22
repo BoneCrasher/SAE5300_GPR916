@@ -43,7 +43,8 @@ namespace SAE {
       uint64_t
         m_cameraBuffer,
         m_objectBuffer,
-        m_lightBuffer;
+        m_lightBuffer,
+        m_otherBuffer;
 
       Camera m_defaultCamera;
       Node   m_hierarchyRoot;
@@ -57,7 +58,9 @@ namespace SAE {
         m_specularTextureId,
         m_specularTextureSRVId,
         m_glossTextureId,
-        m_glossTextureSRVId;
+        m_glossTextureSRVId,
+        m_normalTextureId,
+        m_normalTextureSRVId;
 
       uint32_t m_displayMode;
     };
