@@ -32,6 +32,8 @@ SamplerState samplerState;
 float4 phongLighting(
         float3 N,
         float3 L,
+        float  d_L,
+        float  I_L,
         float3 R,
         float3 V,
         float4 C_D,
@@ -47,10 +49,12 @@ float4 phongLighting(
         f_specular = s_specular * cone;
     }
 
+    float  falloff   = I_L * (1.0f / pow(d_L, 2));
+
     float4 C_L       = float4(1.0f, 1.0f, 1.0f, 1.0f);
     float  s_diffuse = 1.0f;
 
-    float4 result = (C_D * s_diffuse * f_lambert) + (C_L * f_specular);
+    float4 result = falloff * ((C_D * s_diffuse * f_lambert) + (C_L * f_specular));
     result = clamp(result, 0.0f, 1.0f);
 
     return result;
@@ -112,6 +116,8 @@ float4 main(FragmentInput input) : SV_Target0 {
     return phongLighting(
                 N_normalized, 
                 L_normalized,
+                length(L),
+                lightIntensity,
                 R_normalized, 
                 V_normalized,
                 t_diffuseColor,
