@@ -17,11 +17,13 @@ cbuffer Lighting : register(b1)
 
 struct FragmentInput
 {
-    float4   position           : SV_Position;
-    float4   worldSpacePosition : POSITION0;
-    float3x3 TBN                : TANGENT0;
-    float4   uv                 : TEXCOORD0;
-    float4   color              : COLOR0;
+    float4 position    : SV_Position;
+    float4 position_ws : POSITION0;
+    float3 tangent     : TANGENT0;
+    float3 normal      : NORMAL0;
+    float3 binormal    : NORMAL1;
+    float4 uv          : TEXCOORD0;
+    float4 color       : COLOR0;
 };
 
 static const float PI = 3.14159265f;
@@ -56,7 +58,7 @@ float4 phongLighting(
 
     float4 result = falloff * ((C_D * s_diffuse * f_lambert) + (C_L * f_specular));
     result = clamp(result, 0.0f, 1.0f);
-
+    
     return result;
 }
 
@@ -80,31 +82,32 @@ float4 main(FragmentInput input) : SV_Target0 {
         L = -lightDirection;
         break;
         case 1: // Point
-        L = (lightPosition - input.worldSpacePosition);
+        L = (lightPosition - input.position_ws);
         break;
         case 2: // Spot
-        L = (lightPosition - input.worldSpacePosition);
+        L = (lightPosition - input.position_ws);
         break;
     }    
     float3 L_normalized = normalize(L.xyz);
 
     float3x3 TBN 
     = {
-        normalize(input.TBN[0]), 
-        normalize(input.TBN[1]), 
-        normalize(input.TBN[2])
+        normalize(input.tangent), 
+        -normalize(input.binormal),
+        normalize(input.normal)
     };
     TBN = transpose(TBN);
     
     float3 N_unpacked_normalized_tangentspace = normalize(((2.0f * t_normalColor) - 1.0f).xyz);
-    float3 N_unpacked_normalized_worldspace   = normalize(mul(TBN, N_unpacked_normalized_tangentspace));
-
+    float3 N_unpacked_normalized_worldspace   = normalize(mul(TBN, N_unpacked_normalized_tangentspace));    
     float3 N_normalized = N_unpacked_normalized_worldspace;
+
+    //return float4(((N_normalized + 1.0f) * 0.5f), 1.0f);
 
     float3 R = -reflect(L_normalized, N_normalized);
     float3 R_normalized = normalize(R);
     
-    float3 V = (cameraPosition - input.worldSpacePosition).xyz;
+    float3 V = (cameraPosition - input.position_ws).xyz;
     float3 V_normalized = normalize(V);
 
     float  gloss_bias        = 7;

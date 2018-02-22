@@ -59,10 +59,10 @@ namespace SAE {
       desc.FillMode              = D3D11_FILL_SOLID;
       desc.CullMode              = D3D11_CULL_BACK;
       desc.FrontCounterClockwise = true;
-      desc.AntialiasedLineEnable = false;
+      desc.AntialiasedLineEnable = true;
       desc.MultisampleEnable     = false;
       desc.ScissorEnable         = false;
-      desc.DepthClipEnable       = false;
+      desc.DepthClipEnable       = true;
 
       m_rasterizerStateId = m_resourceManager->create<ID3D11RasterizerState>(desc);
 

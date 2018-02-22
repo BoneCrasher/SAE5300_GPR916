@@ -30,11 +30,13 @@ struct VertexInput
 
 struct VertexOutput
 {
-    float4   position           : SV_Position;
-    float4   worldSpacePosition : POSITION0;
-    float3x3 TBN                : TANGENT0;
-    float4   uv                 : TEXCOORD0;
-    float4   color              : COLOR0;
+    float4 position    : SV_Position;
+    float4 position_ws : POSITION0;
+    float3 tangent     : TANGENT0;
+    float3 normal      : NORMAL0;
+    float3 binormal    : NORMAL1;
+    float4 uv          : TEXCOORD0;
+    float4 color       : COLOR0;
 };
 
 VertexOutput main(VertexInput input) {
@@ -45,28 +47,23 @@ VertexOutput main(VertexInput input) {
     
     float4x4 viewProjection      = mul(projection, view);
     float4x4 worldViewProjection = mul(viewProjection, world);
-
-    VertexOutput output;
-    output.uv    = input.uv;
-    output.color = input.color;
-
-    output.position           = mul(worldViewProjection, input.position);
-    output.worldSpacePosition = mul(world, input.position);
-
-    float3x3 TBN 
-    = {
-        tangent.xyz,
-        bitangent.xyz,
-        normal.xyz
-    };
+    
     float3x3 normalMatrix 
     = {
         invTransposeWorld[0].xyz,
         invTransposeWorld[1].xyz,
         invTransposeWorld[2].xyz
     };
-
-    output.TBN = mul(TBN, normalMatrix);
     
+    VertexOutput output;
+    output.uv          = input.uv;
+    output.color       = input.color;
+    output.position    = mul(worldViewProjection, position);
+    output.position_ws = mul(world, position);
+    
+    output.tangent  = normalize(mul(normalMatrix, tangent.xyz));
+    output.normal   = normalize(mul(normalMatrix, normal.xyz));
+    output.binormal = normalize(mul(normalMatrix, bitangent.xyz));
+        
     return output;    
 }

@@ -74,8 +74,10 @@ namespace SAE {
         | aiProcess_GenNormals
         | aiProcess_CalcTangentSpace
         | aiProcess_Triangulate
+        //  aiProcess_MakeLeftHanded
         // | aiProcess_FixInfacingNormals
         | aiProcess_FlipWindingOrder;
+        ;
 
       const aiScene*pScene = importer.ReadFile(filename, flags);
 

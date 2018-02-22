@@ -54,7 +54,7 @@ namespace SAE {
         = resourceManager->create<ID3D11Buffer>(lightBufferDesc, lightInitialData);
 
       DX11TransformPtr lightTransform = DX11TransformPtr(new DX11Transform());
-      lightTransform->setTranslation(0.0f, 20.0f, 40.0f);
+      lightTransform->setTranslation(0.0f, 1.0f, 40.0f);
 
       m_lights[1] = lightTransform;
 
@@ -117,7 +117,6 @@ namespace SAE {
       m_meshes[cubeId]     = cubeMesh;
       
       lightTransform->setTranslation(cubeTransform->getTranslation()); // Place light in the middle of the plane and shift up
-      lightTransform->translateVerticalBy(10);
 
       // LOAD TEXTURES HERE!!!      
       if(!SAE::DirectX11::LoadTextureFromFile(resourceManager, "resources/textures/Sci-Fi-Floor-Diffuse.tga", m_diffuseTextureId, m_diffuseTextureSRVId)) {
@@ -372,7 +371,7 @@ namespace SAE {
         // Third column: Direction
         // Fourth column: Falloff Properties
         ptr->lights[0].m[0][3] = 1.0f;       // 0-Dir, 1-Point, 2-Spot
-        ptr->lights[0].m[1][3] = 1.0f;       // Intensity
+        ptr->lights[0].m[1][3] = 3.0f;       // Intensity
         ptr->lights[0].m[2][3] = RAD(30.0f); // Hot Spot Angle
         ptr->lights[0].m[3][3] = RAD(5.0f);  // Falloff Beam Angle
 
