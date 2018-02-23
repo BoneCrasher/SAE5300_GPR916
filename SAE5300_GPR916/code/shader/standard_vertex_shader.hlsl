@@ -43,7 +43,7 @@ VertexOutput main(VertexInput input) {
     float4 position  = float4(input.position.xyz, 1.0f);
     float4 normal    = normalize(float4(input.normal.xyz,   0.0f));
     float4 tangent   = normalize(float4(input.tangent.xyz,  0.0f));
-    float4 bitangent = normalize(float4(cross(normal.xyz, tangent.xyz), 0.0f));
+    float4 bitangent = normalize(float4(cross(tangent.xyz, normal.xyz), 0.0f));
     
     float4x4 viewProjection      = mul(projection, view);
     float4x4 worldViewProjection = mul(viewProjection, world);

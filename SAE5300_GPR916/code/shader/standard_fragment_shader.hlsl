@@ -51,7 +51,8 @@ float4 phongLighting(
         f_specular = s_specular * cone;
     }
 
-    float  falloff   = I_L * (1.0f / pow(d_L, 2));
+    float3 falloff_proportions = { 0.5f, 0.3f, 0.01f};
+    float  falloff             = I_L * (1.0f / (falloff_proportions.x * pow(d_L, 2) + falloff_proportions.y * d_L + falloff_proportions.z));
 
     float4 C_L       = float4(1.0f, 1.0f, 1.0f, 1.0f);
     float  s_diffuse = 1.0f;
@@ -93,7 +94,7 @@ float4 main(FragmentInput input) : SV_Target0 {
     float3x3 TBN 
     = {
         normalize(input.tangent), 
-        -normalize(input.binormal),
+        normalize(input.binormal),
         normalize(input.normal)
     };
     TBN = transpose(TBN);
