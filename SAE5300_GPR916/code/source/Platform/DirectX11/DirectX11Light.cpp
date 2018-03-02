@@ -24,7 +24,7 @@ namespace SAE {
       float intensity   = props.intensity;
       float falloff_sq  = 0.5f;
       float falloff_lin = 0.3f;
-      float falloff_c   = 0.01f - (intensity / 0.0001);
+      float falloff_c   = 0.01f - (intensity / 0.001);
 
       float determinant = sqrtf(pow(falloff_lin, 2) - (4 * falloff_sq * falloff_c));
       float x1          = -falloff_lin + determinant;
@@ -80,12 +80,12 @@ namespace SAE {
       Light::createProjectionMatrices()
     {
       transform().worldMatrix(XMMatrixIdentity(), nullptr);
-      m_projectionMatrix[0] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
-      m_projectionMatrix[1] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
-      m_projectionMatrix[2] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
-      m_projectionMatrix[3] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
-      m_projectionMatrix[4] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
-      m_projectionMatrix[5] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, 2.0f * m_properties.specificProperties.point.distance);
+      m_projectionMatrix[0] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
+      m_projectionMatrix[1] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
+      m_projectionMatrix[2] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
+      m_projectionMatrix[3] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
+      m_projectionMatrix[4] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
+      m_projectionMatrix[5] = XMMatrixPerspectiveFovLH((float)(M_PI / 2.0f), 1.0f, 0.001f, m_properties.specificProperties.point.distance);
     }
 
   }

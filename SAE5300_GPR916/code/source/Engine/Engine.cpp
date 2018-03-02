@@ -132,8 +132,8 @@ namespace SAE {
         lightSphereId[k] = 1 + k;
 
         DX11TransformPtr lightSphereTransform = DX11TransformPtr(new DX11Transform());
-        lightSphereTransform->setTranslation(-2.0f + (k * 2.0f), 1.0f, 20.0f);
-        lightSphereTransform->setScale(0.01f, 0.01f, 0.01f);
+        lightSphereTransform->setTranslation(-0.1f + (k * 0.1f), 1.0f, -0.1f + (k * 0.1));
+        lightSphereTransform->setScale(0.001f, 0.01f, 0.001f);
 
         m_transforms[lightSphereId[k]] = lightSphereTransform;
         m_meshes[lightSphereId[k]]     = lightSphereMesh;
@@ -243,20 +243,22 @@ namespace SAE {
           {}
         },
         {
-          lightSphereId[1],
-          {}
-        },
-        {
-          lightSphereId[2],
-          {}
-        },
-        {
-          lightSphereId[3],
-          {}
-        },
-        {
           planeId,
-          {}
+          {
+
+            {
+              lightSphereId[1],
+              {}
+            },
+            {
+              lightSphereId[2],
+              {}
+            },
+            {
+              lightSphereId[3],
+             {}
+            },
+          }
         },
         {
           shadowSphereId,
@@ -351,7 +353,7 @@ namespace SAE {
 
       // Transform all objects
       float rotation = (360.0f / 30.0f) * time.totalElapsed;
-      m_transforms[2]->setRotation(0.0f, rotation, 0.0f);
+      m_transforms[5]->setRotation(0.0f, rotation, 0.0f);
 
       // Update hierarchy to generate world matrices
       DX11TransformPtr parent = DX11TransformPtr(new DX11Transform());
@@ -468,8 +470,7 @@ namespace SAE {
           return false;
 
         Light &light = m_lights[lightId];
-        light.transform().worldMatrix(XMMatrixIdentity(), nullptr);
-;
+        light.transform().worldMatrix(XMMatrixIdentity(), nullptr);;
 
         memcpy(ptr->lights[targetIndex].view, light.viewMatrices(), sizeof(XMMATRIX) * 6);
         ptr->lights[targetIndex].projection   = light.projectionMatrix(shadowMapIndex);
@@ -498,13 +499,14 @@ namespace SAE {
         if(!objectId)
           return false;
 
-        for(uint32_t k=0; k < 4; ++k)
+        for(uint32_t k=0; k < 1; ++k)
           if(objectId == (k + 1)) { // Object for light
             Light &light = m_lights[(k + 1)];
             ptr->world             = light.transform().composedWorldMatrix();
             ptr->invTransposeWorld = XMMatrixTranspose(XMMatrixInverse(nullptr, ptr->world));
             return true;
           }
+        
 
         DX11TransformPtr transform = m_transforms[objectId];
         ptr->world             = transform->composedWorldMatrix();

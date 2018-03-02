@@ -122,7 +122,7 @@ namespace SAE {
 
       inline void worldMatrix(const XMMATRIX& parent, XMMATRIX *pCombined)
       {
-        m_composed = parent * m_local;
+        m_composed =  XMMatrixMultiply(m_local, parent);
 
         if(pCombined)
           *pCombined = composedWorldMatrix();
@@ -146,7 +146,7 @@ namespace SAE {
         XMMATRIX R  = m_rotation;
         XMMATRIX S  = XMMatrixScaling(VEC_X(m_scale), VEC_Y(m_scale), VEC_Z(m_scale));
 
-        m_local = ((S * R) * T);
+        m_local = XMMatrixMultiply(XMMatrixMultiply(S, R), T);
 
         // Recalculate the axis vectors
         m_right     = R.r[0];
