@@ -10,6 +10,7 @@
 #include "Platform/DirectX11/DirectX11ResourceManager.h"
 #include "Platform/DirectX11/DirectX11Transform.h"
 #include "Platform/DirectX11/DirectX11Mesh.h"
+#include "Platform/DirectX11/DirectX11Light.h"
 
 #include "Renderer/RendererDTO.h"
 
@@ -36,7 +37,10 @@ namespace SAE {
         const Timer::State &time,
         const InputState   &inputState);
       bool render(
-        RenderScene &sceneHolder);
+        PassType    const&passType,
+        RenderScene      &sceneHolder,
+        uint64_t    const&cubeIndex      = 0,
+        uint64_t    const&shadowMapIndex = 0);
       bool deinitialize();
 
     private:
@@ -44,15 +48,17 @@ namespace SAE {
         m_cameraBuffer,
         m_objectBuffer,
         m_lightBuffer,
-        m_otherBuffer;
+        m_otherBuffer,
+        m_shadowMapLightBufferId;
 
       Camera m_defaultCamera;
+
       Node   m_hierarchyRoot;
       std::map<uint64_t, SAE::DirectX11::DirectX11MeshPtr> m_meshes;
       std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_transforms;
-      std::map<uint64_t, SAE::DirectX11::DX11TransformPtr> m_lights;
+      std::map<uint64_t, Light> m_lights;
 
-      uint64_t 
+      uint64_t
         m_diffuseTextureId,
         m_diffuseTextureSRVId,
         m_specularTextureId,
@@ -60,7 +66,10 @@ namespace SAE {
         m_glossTextureId,
         m_glossTextureSRVId,
         m_normalTextureId,
-        m_normalTextureSRVId;
+        m_normalTextureSRVId,
+        m_shadowMapTextureId,
+        m_shadowMapSRVId,
+        m_shadowMapDSVId[24];
 
       uint32_t m_displayMode;
     };

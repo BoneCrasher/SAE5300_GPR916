@@ -24,12 +24,28 @@ namespace SAE {
       XMMATRIX invTransposeWorld;
     };
 
-    struct LightBuffer_t {
-      XMMATRIX lights[4];
-      uint32_t lightIndex;
-      uint32_t unused0;
+    struct LightInfo_t {
+      XMMATRIX view[6];
+      XMMATRIX projection;
+      XMVECTOR position;
+      XMVECTOR direction;
+      XMVECTOR color;
+      uint32_t type;
+      uint32_t lightViewIndex;
       uint32_t unused1;
       uint32_t unused2;
+      float    intensity;
+      float    distance;
+      float    hotSpotAngle;
+      float    falloffAngle;
+    };
+
+    struct LightBuffer_t {
+      LightInfo_t lights[4];
+      uint32_t    lightIndex;
+      uint32_t    unused0;
+      uint32_t    unused1;
+      uint32_t    unused2;
     };
 
     struct OtherBuffer_t {
@@ -58,12 +74,15 @@ namespace SAE {
         cameraBufferId,
         objectBufferId,
         lightBufferId,
-        otherBufferId;
+        otherBufferId,
+        shadowMapTextureSRVId;
+      uint64_t
+        renderTargetId;
       std::function<bool(CameraBuffer_t*)>
         cameraBufferUpdateFn;
       std::function<bool(ObjectBuffer_t*, uint64_t)>
         objectBufferUpdateFn;
-      std::function<bool(LightBuffer_t*, uint64_t)>
+      std::function<bool(LightBuffer_t*, uint64_t, uint64_t)>
         lightingBufferUpdateFn;
       std::function<bool(OtherBuffer_t*)>
         otherBufferUpdateFn;
@@ -72,8 +91,11 @@ namespace SAE {
       std::vector<uint64_t>
         lights;
     };
-
-
+    
+    enum class PassType {
+      Main      = 1,
+      ShadowMap = 2
+    };
   }
 }
 

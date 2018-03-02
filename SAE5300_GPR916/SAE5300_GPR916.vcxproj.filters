@@ -87,6 +87,9 @@
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="code\include\Platform\DirectX11\DirectX11Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -131,6 +134,9 @@
     <ClCompile Include="code\source\Engine\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="code\source\Platform\DirectX11\DirectX11Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SAE5300_GPR916.rc">
@@ -148,5 +154,7 @@
   <ItemGroup>
     <FxCompile Include="code\shader\standard_fragment_shader.hlsl" />
     <FxCompile Include="code\shader\standard_vertex_shader.hlsl" />
+    <FxCompile Include="code\shader\shadowmap_fragment_shader.hlsl" />
+    <FxCompile Include="code\shader\shadowmap_vertex_shader.hlsl" />
   </ItemGroup>
 </Project>

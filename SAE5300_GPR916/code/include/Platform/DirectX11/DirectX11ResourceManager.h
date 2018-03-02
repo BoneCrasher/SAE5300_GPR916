@@ -29,6 +29,7 @@ namespace SAE {
     ID3D11Texture2D,         \
     ID3D11Texture3D,         \
     ID3D11ShaderResourceView, \
+    ID3D11RenderTargetView, \
     ID3D11SamplerState
 
     class DirectX11ResourceManager 
@@ -134,6 +135,15 @@ namespace SAE {
                 ID3D11Texture2D*>
       (D3D11_SHADER_RESOURCE_VIEW_DESC  const&desc, 
        ID3D11Texture2D                 *const&texture);
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11RenderTargetView,
+      D3D11_RENDER_TARGET_VIEW_DESC,
+      ID3D11Texture2D*>
+      (D3D11_RENDER_TARGET_VIEW_DESC  const&desc, 
+       ID3D11Texture2D                *const&texture);
 
     template <>
     uint64_t 

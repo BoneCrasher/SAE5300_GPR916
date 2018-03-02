@@ -175,6 +175,7 @@
     <ClInclude Include="code\include\Engine\Transform.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Camera.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Environment.h" />
+    <ClInclude Include="code\include\Platform\DirectX11\DirectX11Light.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Lighting.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11ResourceManager.h" />
     <ClInclude Include="code\include\Platform\DirectX11\DirectX11Texture.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="code\source\Engine\Texture.cpp" />
     <ClCompile Include="code\source\Logging\Logging.cpp" />
     <ClCompile Include="code\source\Platform\DirectX11\DirectX11Environment.cpp" />
+    <ClCompile Include="code\source\Platform\DirectX11\DirectX11Light.cpp" />
     <ClCompile Include="code\source\Platform\DirectX11\DirectX11Mesh.cpp" />
     <ClCompile Include="code\source\Platform\DirectX11\DirectX11ResourceManager.cpp" />
     <ClCompile Include="code\source\Platform\DirectX11\DirectXCamera.cpp" />
@@ -223,6 +225,14 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="code\shader\shadowmap_fragment_shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="code\shader\shadowmap_vertex_shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="code\shader\standard_fragment_shader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>

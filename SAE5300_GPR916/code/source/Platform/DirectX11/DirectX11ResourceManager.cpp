@@ -352,5 +352,42 @@ namespace SAE {
       // 6. Return id
       return id;
     }
+
+    template <>
+    uint64_t
+      DirectX11ResourceManager
+      ::create<ID3D11RenderTargetView,
+      D3D11_RENDER_TARGET_VIEW_DESC,
+      ID3D11Texture2D*>
+      (D3D11_RENDER_TARGET_VIEW_DESC  const&desc,
+       ID3D11Texture2D                *const&texture)
+    {
+
+      // ---------------------------------------------------------------
+      // RCA -> Resource Creation Algorithm 
+      // ---------------------------------------------------------------
+      // 1. Declare unmanaged null initialized pointer of specific type
+      ID3D11RenderTargetView
+        *pRTVUnmanaged = nullptr;
+
+      // 2. Call ID3D11Device creation function and handle error
+      HRESULT hres = m_device->CreateRenderTargetView(texture, &desc, &pRTVUnmanaged);
+      HandleWINAPIError(hres, "Failed to create render target view.");
+
+      // 3. Create unique id by abusing reinterpret_cast to uint64_t
+      uint64_t id = reinterpret_cast<uint64_t>(pRTVUnmanaged);
+
+      // 4. Create managed directX shared pointer
+      std::shared_ptr<ID3D11RenderTargetView>
+        pRTVManaged
+        = MakeDirectX11ResourceSharedPointer(pRTVUnmanaged);
+
+      // 5. Push to resource holder
+      this->ResourceHolder<ID3D11RenderTargetView>
+        ::set(id, pRTVManaged);
+
+      // 6. Return id
+      return id;
+    }
   }
 }

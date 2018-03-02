@@ -62,7 +62,7 @@ namespace SAE {
       desc.AntialiasedLineEnable = true;
       desc.MultisampleEnable     = false;
       desc.ScissorEnable         = false;
-      desc.DepthClipEnable       = true;
+      desc.DepthClipEnable       = false;
 
       m_rasterizerStateId = m_resourceManager->create<ID3D11RasterizerState>(desc);
 
@@ -80,6 +80,15 @@ namespace SAE {
       ssDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
       m_defaultSamplerStateId = m_resourceManager->create<ID3D11SamplerState>(ssDesc);
 
+      D3D11_SAMPLER_DESC ssCubeDesc={};
+      ssCubeDesc.Filter   = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+      ssCubeDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+      ssCubeDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+      ssCubeDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+      ssCubeDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+      m_shadowMapSamplerStateId = m_resourceManager->create<ID3D11SamplerState>(ssCubeDesc);
+
+
       return true;
     }
 
@@ -87,74 +96,117 @@ namespace SAE {
       return true;
     }
 
-    void Renderer::render(
+    void Renderer::renderPass(
       SAE::Timing::Timer::State const&time,
-      RenderScene               const&scene) 
+      RenderScene               const&scene,
+      PassType                  const&passType)
     {
       ID3D11DeviceContextPtr context = m_dx11Environment->getImmediateContext();
 
       ID3D11RenderTargetView  *renderTarget      = m_dx11Environment->getMainRenderTarget().get();
       ID3D11DepthStencilView  *depthStencilView  = reinterpret_cast<ID3D11DepthStencilView*>(m_dsvViewHandle);
+
+      if(passType == PassType::ShadowMap) {
+        renderTarget     = nullptr;
+        depthStencilView = reinterpret_cast<ID3D11DepthStencilView*>(scene.renderTargetId);
+      }
+
       ID3D11DepthStencilState *depthStencilState = reinterpret_cast<ID3D11DepthStencilState*>(m_dssHandle);
       ID3D11RasterizerState   *rasterizerState   = reinterpret_cast<ID3D11RasterizerState*>(m_rasterizerStateId);
       ID3D11SamplerState      *defaultSampler    = reinterpret_cast<ID3D11SamplerState*>(m_defaultSamplerStateId);
+      ID3D11SamplerState      *shadowMapSampler  = reinterpret_cast<ID3D11SamplerState*>(m_shadowMapSamplerStateId);
 
       FLOAT color[4] ={ 0.5f, 0.5f, 0.5f, 1.0f };
-      context->ClearRenderTargetView(renderTarget, color);
-      context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0xFF);
+
+      if(renderTarget)
+        context->ClearRenderTargetView(renderTarget, color);
       context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
       context->RSSetState(rasterizerState);
+
+      if(passType == PassType::Main) {
+        m_viewPort.TopLeftX = 0;
+        m_viewPort.TopLeftY = 0;
+        m_viewPort.Width    = m_dx11Environment->getSelectedMode().width;
+        m_viewPort.Height   = m_dx11Environment->getSelectedMode().height;
+        m_viewPort.MinDepth = 0.0;
+        m_viewPort.MaxDepth = 1.0;
+      }
+      else {
+        m_viewPort.TopLeftX = 0;
+        m_viewPort.TopLeftY = 0;
+        m_viewPort.Width    = 1024;
+        m_viewPort.Height   = 1024;
+        m_viewPort.MinDepth = 0.0;
+        m_viewPort.MaxDepth = 1.0;
+      }
+
       context->RSSetViewports(1, &m_viewPort);
-      context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+      if(renderTarget)
+        context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+      else
+        context->OMSetRenderTargets(0, nullptr, depthStencilView);
+
+      context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0xFF);
       context->OMSetDepthStencilState(depthStencilState, 0);
 
-      ID3D11Buffer *cameraBuffer =reinterpret_cast<ID3D11Buffer*>(scene.cameraBufferId);
-      ID3D11Buffer *objectBuffer =reinterpret_cast<ID3D11Buffer*>(scene.objectBufferId);
-      ID3D11Buffer *lightBuffer  =reinterpret_cast<ID3D11Buffer*>(scene.lightBufferId);
-      ID3D11Buffer *otherBuffer  =reinterpret_cast<ID3D11Buffer*>(scene.otherBufferId);
+      ID3D11Buffer *cameraBuffer    =reinterpret_cast<ID3D11Buffer*>(scene.cameraBufferId);
+      ID3D11Buffer *objectBuffer    =reinterpret_cast<ID3D11Buffer*>(scene.objectBufferId);
+      ID3D11Buffer *lightBuffer     =reinterpret_cast<ID3D11Buffer*>(scene.lightBufferId);
+      ID3D11Buffer *otherBuffer     =reinterpret_cast<ID3D11Buffer*>(scene.otherBufferId);
 
       D3D11_MAPPED_SUBRESOURCE mapped ={};
-      context->Map(
-        cameraBuffer,
-        0,
-        D3D11_MAP_WRITE_DISCARD,
-        0,
-        &mapped);
-      if(scene.cameraBufferUpdateFn)
-        scene.cameraBufferUpdateFn(static_cast<CameraBuffer_t*>(mapped.pData));
-      context->Unmap(cameraBuffer, 0);
 
-      context->VSSetConstantBuffers(0, 1, &cameraBuffer);
-      context->PSSetConstantBuffers(0, 1, &cameraBuffer);
+      if(scene.cameraBufferId) {
+        context->Map(
+          cameraBuffer,
+          0,
+          D3D11_MAP_WRITE_DISCARD,
+          0,
+          &mapped);
+        if(scene.cameraBufferUpdateFn)
+          scene.cameraBufferUpdateFn(static_cast<CameraBuffer_t*>(mapped.pData));
+        context->Unmap(cameraBuffer, 0);
+
+        context->VSSetConstantBuffers(0, 1, &cameraBuffer);
+        context->PSSetConstantBuffers(0, 1, &cameraBuffer);
+      }
 
       // Lights
-      for(uint64_t const&lightId : scene.lights) {
+      if(scene.lightBufferId) {
         context->Map(
           lightBuffer,
           0,
           D3D11_MAP_WRITE_DISCARD,
           0,
           &mapped);
-        if(scene.lightingBufferUpdateFn)
-          scene.lightingBufferUpdateFn(static_cast<LightBuffer_t*>(mapped.pData), lightId);
+        uint64_t k=0;
+        for(uint64_t const&lightId : scene.lights) {
+          if(scene.lightingBufferUpdateFn)
+            scene.lightingBufferUpdateFn(static_cast<LightBuffer_t*>(mapped.pData), lightId, k);
+
+          ++k;
+        }
         context->Unmap(lightBuffer, 0);
+        context->VSSetConstantBuffers(1, 1, &lightBuffer);
+        context->PSSetConstantBuffers(1, 1, &lightBuffer);
       }
-      
-      context->PSSetConstantBuffers(1, 1, &lightBuffer);
 
       // Other
-      mapped ={};
-      context->Map(
-        otherBuffer,
-        0,
-        D3D11_MAP_WRITE_DISCARD,
-        0,
-        &mapped);
-      if(scene.otherBufferUpdateFn)
-        scene.otherBufferUpdateFn(static_cast<OtherBuffer_t*>(mapped.pData));
-      context->Unmap(otherBuffer, 0);
+      if(scene.otherBufferId) {
+        mapped ={};
+        context->Map(
+          otherBuffer,
+          0,
+          D3D11_MAP_WRITE_DISCARD,
+          0,
+          &mapped);
+        if(scene.otherBufferUpdateFn)
+          scene.otherBufferUpdateFn(static_cast<OtherBuffer_t*>(mapped.pData));
+        context->Unmap(otherBuffer, 0);
+        // context->PSSetConstantBuffers(2, 1, &otherBuffer);
+      }
 
-      // context->PSSetConstantBuffers(2, 1, &otherBuffer);
+      ID3D11ShaderResourceView *shadowMapTexture = reinterpret_cast<ID3D11ShaderResourceView*>(scene.shadowMapTextureSRVId);
 
       // Objects
       for(RenderObject const&object : scene.objects) {
@@ -168,7 +220,6 @@ namespace SAE {
         ID3D11ShaderResourceView *specularTexture = reinterpret_cast<ID3D11ShaderResourceView*>(object.specularTextureSRVId);
         ID3D11ShaderResourceView *glossTexture    = reinterpret_cast<ID3D11ShaderResourceView*>(object.glossTextureSRVId);
         ID3D11ShaderResourceView *normalTexture   = reinterpret_cast<ID3D11ShaderResourceView*>(object.normalTextureSRVId);
-
 
         D3D11_BUFFER_DESC indexBufferDesc ={};
         indexBuffer->GetDesc(&indexBufferDesc);
@@ -185,10 +236,7 @@ namespace SAE {
           scene.objectBufferUpdateFn(static_cast<ObjectBuffer_t*>(mapped.pData), object.objectId);
         context->Unmap(objectBuffer, 0);
 
-        context->VSSetConstantBuffers(1, 1, &objectBuffer);
-
-        std::vector<ID3D11ShaderResourceView*> psSRV
-          ={ diffuseTexture, specularTexture, glossTexture, normalTexture };
+        context->VSSetConstantBuffers(2, 1, &objectBuffer);
 
         std::size_t vertexSize = sizeof(Mesh<XMVECTOR>::Vertex_t);
         std::size_t offset     = 0;
@@ -197,13 +245,26 @@ namespace SAE {
         context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
         context->VSSetShader(vertexShader, nullptr, 0);
         context->PSSetShader(pixelShader, nullptr, 0);
-        context->PSSetShaderResources(0, psSRV.size(), psSRV.data());
-        context->PSSetSamplers(0, 1, &defaultSampler);
+
+        if(!(passType == PassType::ShadowMap)) {
+
+          std::vector<ID3D11ShaderResourceView*> psSRV
+            ={ diffuseTexture, specularTexture, glossTexture, normalTexture, shadowMapTexture };
+          context->PSSetShaderResources(0, psSRV.size(), psSRV.data());
+
+          std::vector<ID3D11SamplerState*> psSS
+            ={ defaultSampler, shadowMapSampler };
+          context->PSSetSamplers(0, psSS.size(), psSS.data());
+        }
 
         context->DrawIndexed(indexBufferSize, 0, 0);
       }
 
-      m_dx11Environment->getSwapChain()->Present(0, 0);
+      if(passType == PassType::Main)
+        m_dx11Environment->getSwapChain()->Present(0, 0);
+
+      context->ClearState();
+
     }
 
   }

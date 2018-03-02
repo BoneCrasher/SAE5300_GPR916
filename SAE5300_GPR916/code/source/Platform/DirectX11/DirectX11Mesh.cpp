@@ -164,12 +164,41 @@ namespace SAE {
 
       uint64_t pixelShaderHandle
         = resourceManager->create<ID3D11PixelShader>(pixelShaderBuffer);
+
+
+      if(!loadShaderFn("shadowmap_vertex_shader.cso", vertexShaderByteCode)) {
+        // TODO: ERROR
+      }
+
+      if(!loadShaderFn("shadowmap_fragment_shader.cso", pixelShaderByteCode)) {
+        // TODO: ERROR
+      }
+
+      vertexShaderBuffer       ={ nullptr, 0 };
+      vertexShaderBuffer.pData = vertexShaderByteCode.data();
+      vertexShaderBuffer.size  = vertexShaderByteCode.size();
+
+      pixelShaderBuffer       ={ nullptr, 0 };
+      pixelShaderBuffer.pData = pixelShaderByteCode.data();
+      pixelShaderBuffer.size  = pixelShaderByteCode.size();
+
+      uint64_t shadowMapInputLayoutHandle
+        = resourceManager->create<ID3D11InputLayout>(inputElements, vertexShaderBuffer);
+
+      uint64_t shadowMapVertexShaderHandle
+        = resourceManager->create<ID3D11VertexShader>(vertexShaderBuffer);
+
+      uint64_t shadowMapPixelShaderHandle
+        = resourceManager->create<ID3D11PixelShader>(pixelShaderBuffer);
       
       pMesh->setVertexBuffer(vertexBufferHandle);
       pMesh->setIndexBuffer(indexBufferHandle);
       pMesh->setVertexShader(vertexShaderHandle);
       pMesh->setPixelShader(pixelShaderHandle);
       pMesh->setInputLayout(inputLayoutHandle);
+      pMesh->setShadowMapVertexShader(shadowMapVertexShaderHandle);
+      pMesh->setShadowMapPixelShader(shadowMapPixelShaderHandle);
+      pMesh->setShadowMapInputLayout(shadowMapInputLayoutHandle);
 
       return pMesh;
     }
@@ -296,7 +325,9 @@ namespace SAE {
 
       std::vector<uint8_t> 
         vertexShaderByteCode,
-        pixelShaderByteCode;
+        pixelShaderByteCode,
+        shadowMapVertexShaderByteCode,
+        shadowMapPixelShaderByteCode;
 
       if(!loadShaderFn("standard_vertex_shader.cso", vertexShaderByteCode)) {
         // TODO: ERROR
@@ -325,11 +356,40 @@ namespace SAE {
       uint64_t pixelShaderHandle
         = resourceManager->create<ID3D11PixelShader>(pixelShaderBuffer);
 
+
+      if(!loadShaderFn("shadowmap_vertex_shader.cso", shadowMapVertexShaderByteCode)) {
+        // TODO: ERROR
+      }
+
+      if(!loadShaderFn("shadowmap_fragment_shader.cso", shadowMapPixelShaderByteCode)) {
+        // TODO: ERROR
+      }
+      DirectX11ShaderBuffer
+        shadowMapVertexShaderBuffer       ={ nullptr, 0 };
+      shadowMapVertexShaderBuffer.pData = shadowMapVertexShaderByteCode.data();
+      shadowMapVertexShaderBuffer.size  = shadowMapVertexShaderByteCode.size();
+      DirectX11ShaderBuffer
+        shadowMapPixelShaderBuffer       ={ nullptr, 0 };
+      shadowMapPixelShaderBuffer.pData = shadowMapPixelShaderByteCode.data();
+      shadowMapPixelShaderBuffer.size  = shadowMapPixelShaderByteCode.size();
+
+      uint64_t shadowMapInputLayoutHandle
+        = resourceManager->create<ID3D11InputLayout>(inputElements, vertexShaderBuffer);
+
+      uint64_t shadowMapVertexShaderHandle
+        = resourceManager->create<ID3D11VertexShader>(shadowMapVertexShaderBuffer);
+
+      uint64_t shadowMapPixelShaderHandle
+        = resourceManager->create<ID3D11PixelShader>(shadowMapPixelShaderBuffer);
+
       pMesh->setVertexBuffer(vertexBufferHandle);
       pMesh->setIndexBuffer(indexBufferHandle);
       pMesh->setVertexShader(vertexShaderHandle);
       pMesh->setPixelShader(pixelShaderHandle);
       pMesh->setInputLayout(inputLayoutHandle);
+      pMesh->setShadowMapVertexShader(shadowMapVertexShaderHandle);
+      pMesh->setShadowMapPixelShader(shadowMapPixelShaderHandle);
+      pMesh->setShadowMapInputLayout(shadowMapInputLayoutHandle);
 
       return pMesh;
     }

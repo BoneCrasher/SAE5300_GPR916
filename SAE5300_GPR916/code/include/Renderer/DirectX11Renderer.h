@@ -21,9 +21,10 @@ namespace SAE {
       bool initialize();
       bool deinitialize();
 
-      void render(
+      void renderPass(
         SAE::Timing::Timer::State const&time,
-        RenderScene               const&scene);
+        RenderScene               const&scene,
+        PassType                  const&passType);
 
     private:
       std::shared_ptr<DirectX> 
@@ -36,7 +37,9 @@ namespace SAE {
       uint64_t m_dsvViewHandle;
       uint64_t m_dssHandle;
 
-      uint64_t m_defaultSamplerStateId;
+      uint64_t 
+        m_defaultSamplerStateId,
+        m_shadowMapSamplerStateId;
 
       D3D11_VIEWPORT m_viewPort;
     };
